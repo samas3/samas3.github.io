@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>phi-chart-render</title>
+        <meta name="description" content="A Phigros chart render based on Pixi.js" />
+        <meta name="author" content="MisaLiu" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="shortcut icon" href="./icons/favicon.ico" />
+        <link rel="manifest" href="./manifest.webmanifest" />
+        <link href="./style.css" rel="stylesheet" />
+        <!--script src="./eruda.min.js"></script>
+        <script>eruda.init();</script-->
+        <script>
+            const GITHUB_CURRENT_GIT_HASH = `{{CURRENT_HASH}}`;
+
+            function setCookie(cname,cvalue,exdays)
+            {
+                var d = new Date();
+                d.setTime(d.getTime()+(exdays*24*60*60*1000));
+                var expires = "expires="+d.toGMTString();
+                document.cookie = cname + "=" + cvalue + "; " + expires;
+            }
+
+            function getCookie(cname)
+            {
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0; i<ca.length; i++) 
+                {
+                    var c = ca[i].trim();
+                    if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+                }
+                return "";
+            }
+
+            function getSearchString(name)
+            {
+                let searchString = window.location.search.substring(1, window.location.search.length);
+                let searchStrings = searchString.split('&');
+
+                if (!name || name == '') return null;
+                if (searchStrings.length <= 0) return null;
+
+                for (const singleString of searchStrings)
+                {
+                    if (singleString.indexOf(name + '=') >= 0)
+                    {
+                        let stringValue = singleString.replace(name + '=', '');
+                        return decodeURIComponent(stringValue);
+                    }
+                }
+
+                return null;
+            }
+
+            async function unregistServiceWorker()
+            {
+                if (navigator.serviceWorker.getRegistrations)
+                {
+                    let sws = await navigator.serviceWorker.getRegistrations();
+                    if (sws.length > 1)
+                    {
+                        for (const sw of sws)
+                        {
+                            sw.unregister();
+                        }
+                    }
+                }
+            }
+
+            if (getSearchString('debug') === 'true')
+            {
+                let xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = () =>
+                {
+                    if (xhr.readyState === 4 && xhr.status === 200)
+                    {
+                        eval(xhr.responseText);
+                        window.vConsole = new window.VConsole();
+
+                        console.warn(
+                            'You\'re using debug mode, which will enable vConsole for mobile device debuging.\n' +
+                            'You SHOULDN\'T use debug mode in normal use, and don\'t run ANY code here from people that you don\'t know.'
+                        );
+                        console.warn(
+                            '你正在使用 debug 模式，该模式将启用 vConsole 以方便在移动设备上进行调试。\n' +
+                            '你【不应该】在正常使用中启用 debug 模式，并不要在这里运行【任何】来自你不认识的人的代码。'
+                        );
+                    }
+                }
+
+                xhr.open('GET', 'https://cdn.bootcdn.net/ajax/libs/vConsole/3.15.0/vconsole.min.js');
+                xhr.send();
+            }
+            
+            // Init service worker
+            if (GITHUB_CURRENT_GIT_HASH != '{{' + 'CURRENT_HASH' + '}}' && 'serviceWorker' in navigator)
+            {
+                if (navigator.userAgent.indexOf('like Mac OS X') > -1)
+                {
+                    if (getCookie('ios-unregist') != 'true')
+                    {
+                        unregistServiceWorker();
+                        setCookie('ios-unregist', 'true');
+                    }
+                }
+                else if (getSearchString('unregistServiceWorker') == 'true')
+                {
+                    unregistServiceWorker();
+                }
+                else
+                {
+                    navigator.serviceWorker.register('./sw.js');
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div class="file-select">
+            <div>
+                <b>Hey Apple, Fuck You.</b>
+            </div>
+            <hr />
+            <div>
+                Due to some performance issue on FireFox Android, consider using <a href="https://github.com/kiwibrowser/src.next/releases" target="_blank">Kiwi Browser</a> or <a href="https://viayoo.com/" target="_blank">Via</a> or <a href="https://www.google.com/chrome/" target="_blank">Google Chrome</a>.
+            </div>
+            <hr />
+            <label>Select chart file(s): <input type="file" id="file-chart-pack" multiple disabled></label><br>
+            <div class="loading" id="file-read-progress">Please wait until assets loaded...</div>
+            <hr />
+            <label>Chart: <select id="file-chart"></select></label><br>
+            <label>Music: <select id="file-music"></select></label><br>
+            <label>BG: <select id="file-bg"></select></label>
+            <hr />
+            <div class="loading" id="loading-status">Loading scripts...</div>
+            <hr />
+            <label>Custom skin pack: <input type="file" id="file-skin-pack" disabled /></label>&nbsp;<a href="./skin.example.zip" download="skin.example.zip">Download example skin pack</a><br>
+            <div class="loading" id="loading-skin-pack">No skinpack selected.</div>
+            <hr />
+            <label><input type="checkbox" id="settings-multi-note-hl" checked />Highlight same time notes</label><br>
+            <label><input type="checkbox" id="settings-show-ap-status" checked />Show AP status</label><br>
+            <label><input type="checkbox" id="settings-show-input-point" checked />Show input point</label><br>
+            <label>Note scale: <input type="range" id="settings-note-scale" min="0" max="4000" value="2000"></label><br>
+            <label>Background dim: <input type="range" id="settings-bg-dim" min="0" max="1" step="0.01" value="0.5"></label><br>
+            <label>BG blur: <input type="range" id="settings-bg-blur" min="0" max="100" value="50" /></label>
+            <hr />
+            <label>Chart offset: <input type="number" id="settings-audio-offset" placeholder="0" style="width:4em" />ms</label><br>
+            <div style="margin-left:20px">(recommended 100ms for Chrome/Chrome based browsers)</div>
+            <button id="settings-test-input-delay">Tap on this button to test input delay...</button><br>
+            <label>Speed: <input type="range" id="settings-audio-speed" min="0.25" max="1.75" step="0.25" value="1"></label><br>
+            <hr />
+            <label><input type="checkbox" id="settings-hitsound" checked />Hitsound</label><br>
+            <label>Hitsound volume: <input type="range" id="settings-hitsound-volume" min="0" max="1" step="0.01" value="1"></label><br>
+            <hr />
+            <label><input type="checkbox" id="settings-challenge-mode" />Challenge Mode</label><br>
+            <label><input type="checkbox" id="settings-autoplay" />AutoPlay</label><br>
+            <label>
+                <input type="checkbox" id="settings-force-canvas" />Force canvas renderer
+                <div style="margin-left:20px"><i>(may get better performance on some devices/browsers,<br>disabled if your device/browser doesn't support WebGL)</i></div>
+            </label>
+            <label><input type="checkbox" id="settings-anti-alias" checked />Anti-alias</label><br>
+            <label><input type="checkbox" id="settings-low-resolution" />Low resolution mode</label><br>
+            <label><input type="checkbox" id="settings-debug" />Debug</label><br>
+            <hr />
+            <button id="start" disabled>Start</button>
+            <hr />
+            Current git hash: {{CURRENT_HASH}}<br>
+            GitHub homepage: <a href="https://github.com/MisaLiu/phi-chart-render" target="_blank">https://github.com/MisaLiu/phi-chart-render</a><br>
+            Report bugs <a href="https://github.com/MisaLiu/phi-chart-render/issues/new/choose" target="_blank">Here</a>
+            <hr />
+            We uses <a href="https://sentry.io" target="_blank">Sentry.io</a> and <a href="https://analytics.google.com/" target="_blank">Google Analytics</a> to tracking errors and analyze user usage data.
+
+            <button onclick="fullscreen.toggle(document.body, false)" class="fullscreen" id="fullscreen">Fullscreen</button>
+        </div>
+
+        <div class="debug-value"></div>
+        
+        <div class="play-result">
+            <div class="bg-shadow-cover top"></div>
+            <div class="bg-shadow-cover"></div>
+
+            <div class="song-info">
+                <div class="title">Song name</div>
+                <div class="subtitle artist">Artist</div>
+                <div class="subtitle diff">SP Lv.?</div>
+            </div>
+
+            <div class="judge-icon">S</div>
+            <div class="extra-info">FULL COMBO</div>
+            
+            <div class="info-bar score">
+                <div class="score">1000000</div>
+                <div class="acc">Accuracy 100.00%</div>
+            </div>
+
+            <div class="info-bar acc-bar">
+                <div class="judge-histogram">
+                    <div class="center"></div>
+                </div>
+            </div>
+
+            <div class="info-bar detail">
+                <div class="detail">
+                    <div class="detail-single">
+                        <div class="type">Perfect</div>
+                        <div class="value perfect">100</div>
+                    </div>
+                    <div class="detail-single">
+                        <div class="type">Good</div>
+                        <div class="value good">0</div>
+                    </div>
+                    <div class="detail-single">
+                        <div class="type">Bad</div>
+                        <div class="value bad">0</div>
+                    </div>
+                    <div class="detail-single">
+                        <div class="type">Miss</div>
+                        <div class="value miss">0</div>
+                    </div>
+                </div>
+                <div class="max-combo">Max Combo 100</div>
+            </div>
+
+            <div class="actions">
+                <button onclick="history.go(0)">Refresh</button>
+                <button class="big highlight" onclick="restartGame()">Restart</button>
+                <button class="big highlight" onclick="exitGame()">Exit</button>
+            </div>
+        </div>
+
+        <div class="game-paused">
+            <div class="title">Game paused</div>
+            <div class="action">
+                <button onclick="fullscreen.toggle(document.body, false)">Fullscreen</button>
+                <button onclick="exitGame()">Exit</button>
+                <button onclick="restartGame()">Restart</button>
+                <button onclick="pauseGame()">Continue</button>
+            </div>
+        </div>
+
+        <div class="error-window">
+            <div>An error has just occurred, if you're sure this is not caused by you, please <a href="https://github.com/MisaLiu/phi-chart-render/issues/new/choose" target="_blank">report it on GitHub</a>. <!--a href="#" onclick="eruda.show();return false;">Show Eruda</a--><button class="close">Close</button></div>
+            <pre><code class="content">Test Text Not A Real Error</code></pre>
+            <div>The infomation about this error will upload to <a href="https://sentry.io" target="_blank">Sentry.io</a> for analyze and debug.</div>
+        </div>
+        <script src="./script.js?hash={{CURRENT_HASH}}"></script>
+    </body>
+</html>

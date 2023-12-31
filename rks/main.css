@@ -1,0 +1,132 @@
+@import url(/style/Saira.css);
+
+@font-face {
+    font-family: Saira;
+    font-style: normal;
+    font-weight: regular;
+    src: url(/style/saira-regular.eot);
+    src: local("Saira"), local("Saira-Normal"), 
+        url(/style/saira-regular.eot) format("embedded-opentype"), 
+        url(/style/saira-regular.woff2) format("woff2"), 
+        url(/style/saira-regular.woff) format("woff"), 
+        url(/style/saira-regular.ttf) format("truetype"), 
+        url(/style/saira-regular.svg#Saira) format("svg")
+}
+
+.bi {
+    font-weight: 700;
+    line-height: normal;
+    white-space: pre
+}
+
+#container {
+    font-family: Saira,Noto Sans SC;
+    line-height: 0
+}
+
+.svg {
+    border: 1px solid gray;
+    font-weight: 700;
+    margin: 2px
+}
+
+.sb {
+    background-color: #b0e0e6
+}
+
+.sg {
+    background-color: #fffacd
+}
+
+.sr {
+    background-color: #ffb6c1
+}
+
+.rc {
+    text-anchor: middle;
+    font-size: 80px
+}
+
+.r0 {
+    fill: #ff0;
+    stroke: #000
+}
+
+.v {
+    fill: #fff;
+    stroke: #f1eff6
+}
+
+.r1 {
+    fill: #30f
+}
+
+.r2 {
+    fill: #f7d
+}
+
+.r3 {
+    fill: #fa0
+}
+
+.r4 {
+    fill: #3c3
+}
+
+.r5 {
+    fill: #0bb
+}
+
+.r6 {
+    fill: #ccc
+}
+
+.snr {
+    fill: #aaa
+}
+
+.sng {
+    fill: #f80
+}
+
+.snb {
+    fill: red
+}
+
+.rk {
+    fill: #006400;
+    text-anchor: end
+}
+
+.tg {
+    fill: #000;
+    text-anchor: start;
+    stroke: none;
+    font-size: 26px
+}
+
+.rainbow {
+    background:-webkit-linear-gradient(left,blue,lime,red);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-box-decoration-break:clone;
+    box-decoration-break:clone;
+    -webkit-text-fill-color:transparent;
+    text-fill-color:transparent;
+}
+
+.gold {
+    color: gold;
+}
+
+.orange {
+    color: #ff4500;
+}
+
+.blue {
+    color: #07f;
+}
+
+.green {
+    color: #66ff00;
+}
