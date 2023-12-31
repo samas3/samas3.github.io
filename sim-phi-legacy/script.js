@@ -1,0 +1,1704 @@
+'use strict';
+self._i = ['Phi\x67ros模拟器', [1, 4, 21], 1611795955, 1664447437];
+const $ = query => document.getElementById(query);
+const $$ = query => document.body.querySelector(query);
+const $$$ = query => document.body.querySelectorAll(query);
+const tween = {
+	easeInSine: pos => 1 - Math.cos(pos * Math.PI / 2),
+	easeOutSine: pos => Math.sin(pos * Math.PI / 2),
+	easeOutCubic: pos => 1 + (pos - 1) ** 3,
+}
+document.oncontextmenu = e => e.preventDefault(); //qwq
+for (const i of $('view-nav').children) {
+	i.addEventListener('click', function() {
+		for (const j of this.parentElement.children) j.classList.remove('active');
+		const doc = $('view-doc');
+		const msg = $('view-msg');
+		this.classList.add('active');
+		if (i.id == 'msg') {
+			doc.classList.add('hide');
+			msg.classList.remove('hide');
+		} else {
+			if (doc.getAttribute('src') != `docs/${i.id}.html`) doc.src = `docs/${i.id}.html`;
+			msg.classList.add('hide');
+			doc.classList.remove('hide');
+		}
+	});
+}
+$('cover-dark').addEventListener('click', () => {
+	$('cover-dark').classList.add('fade');
+	$('cover-view').classList.add('fade');
+});
+$('qwq').addEventListener('click', () => {
+	$('cover-dark').classList.remove('fade');
+	$('cover-view').classList.remove('fade');
+	$('use').click();
+});
+$('msg-out').addEventListener('click', () => {
+	$('cover-dark').classList.remove('fade');
+	$('cover-view').classList.remove('fade');
+	$('msg').click();
+});
+const msgHandler = {
+	nodeText: $('msg-out'),
+	nodeView: $('view-msg'),
+	lastMessage: '',
+	msgbox(msg, type, fatal) {
+		const msgbox = document.createElement('div');
+		msgbox.innerHTML = msg;
+		msgbox.setAttribute('type', type);
+		msgbox.classList.add('msgbox');
+		const btn = document.createElement('a');
+		btn.innerText = '忽略';
+		btn.style.float = 'right';
+		btn.onclick = () => {
+			msgbox.remove();
+			this.sendMessage(this.lastMessage);
+		}
+		if (fatal) btn.classList.add('disabled');
+		msgbox.appendChild(btn);
+		this.nodeView.appendChild(msgbox);
+	},
+	sendMessage(msg, type) {
+		const num = this.nodeView.querySelectorAll('.msgbox[type=warn]').length;
+		if (type == 'error') {
+			this.nodeText.className = 'error';
+			this.nodeText.innerText = msg;
+		} else {
+			this.nodeText.className = num ? 'warning' : 'accept';
+			this.nodeText.innerText = msg + (num ? `（发现${num}个问题，点击查看）` : '');
+			this.lastMessage = msg;
+		}
+	},
+	sendWarning(msg, isHTML) {
+		const msgText = isHTML ? msg : Utils.escapeHTML(msg);
+		this.msgbox(msgText, 'warn');
+		this.sendMessage(this.lastMessage);
+	},
+	sendError(msg, html, fatal) {
+		if (html) {
+			const exp = /([A-Za-z][A-Za-z+-.]{2,}:\/\/|www\.)[^\s\x00-\x20\x7f-\x9f"]{2,}[^\s\x00-\x20\x7f-\x9f"!'),.:;?\]}]/g;
+			const ahtml = html.replace(exp, (match = '') => {
+				const url = match.startsWith('www.') ? `//${match}` : match;
+				const rpath = match.replace(`${location.origin}/`, '');
+				if (match.indexOf(location.origin) > -1) return `<a href="#"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
+				return `<a href="${url}"target="_blank"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
+			});
+			this.msgbox(ahtml, 'error', fatal);
+		}
+		this.sendMessage(msg, 'error');
+		return false;
+	}
+}
+//
+const stat = new simphi.Stat();
+const app = new simphi.Renderer($('stage')); //test
+const { canvas, ctx, canvasos, ctxos } = app;
+const selectbg = $('select-bg');
+const btnPlay = $('btn-play');
+const btnPause = $('btn-pause');
+const selectbgm = $('select-bgm');
+const selectchart = $('select-chart');
+$('select-scale-ratio').addEventListener('change', evt => {
+	app.setNoteScale(evt.target.value);
+});
+$('select-aspect-ratio').addEventListener('change', evt => {
+	app.setAspectRatio(evt.target.value);
+	resizeStage();
+});
+$('select-global-alpha').addEventListener('change', evt => {
+	app.brightness = Number(evt.target.value);
+});
+$('highLight').addEventListener('change', evt => {
+	app.multiHint = evt.target.checked;
+});
+$('highLight').dispatchEvent(new Event('change'));
+const selectflip = $('select-flip');
+selectflip.addEventListener('change', evt => {
+	app.mirrorView(evt.target.value);
+});
+const selectspeed = $('select-speed');
+selectspeed.addEventListener('change', evt => {
+	const dict = { Slowest: -9, Slower: -4, '': 0, Faster: 3, Fastest: 5 };
+	app.speed = 2 ** (dict[evt.target.value] / 12);
+});
+const scfg = function() {
+	const arr = [];
+	if (qwq[5]) arr[arr.length] = 'Reversed';
+	switch (selectflip.value) {
+		case '1':
+			arr[arr.length] = 'FlipX';
+			break;
+		case '2':
+			arr[arr.length] = 'FlipY';
+			break;
+		case '3':
+			arr[arr.length] = 'FlipX&Y';
+			break;
+		default:
+	}
+	if (selectspeed.value) arr[arr.length] = selectspeed.value;
+	if (isPaused) arr[arr.length] = 'Paused';
+	if (arr.length == 0) return '';
+	return `(${arr.join('+')})`;
+}
+const inputName = $('input-name');
+const inputLevel = $('input-level');
+const inputDesigner = $('input-designer');
+const inputIllustrator = $('input-illustrator');
+const inputOffset = $('input-offset');
+const showPoint = $('showPoint');
+const lineColor = $('lineColor');
+const autoplay = $('autoplay');
+const showTransition = $('showTransition');
+const bgs = {};
+const bgsBlur = {};
+const bgms = {};
+const charts = {};
+const chartLineData = []; //line.csv
+const chartInfoData = []; //info.csv
+async function checkSupport() {
+	/** @param {Error} error */
+	const sysError = (error, message) => {
+		const type = getConstructorName(error);
+		// if (message == 'Script error.') return;
+		let message2 = String(error);
+		let detail = String(error);
+		if (error instanceof Error) {
+			const stack = error.stack || 'Stack not available';
+			if (error.name == type) message2 = error.message;
+			else message2 = `${error.name}: ${error.message}`;
+			const idx = stack.indexOf(message2) + 1;
+			if (idx) detail = `${message2}\n${stack.slice(idx+message2.length)}`;
+			else detail = `${message2}\n    ${stack.split('\n').join('\n    ')}`; //Safari
+		}
+		if (message) message2 = message;
+		const errMessage = `[${type}] ${message2.split('\n')[0]}`;
+		const errDetail = `[${type}] ${detail}`;
+		msgHandler.sendError(errMessage, Utils.escapeHTML(errDetail));
+	};
+	self.addEventListener('error', e => sysError(e.error, e.message));
+	self.addEventListener('unhandledrejection', e => sysError(e.reason));
+	const loadPlugin = async (name, urls, check) => {
+		if (!check()) return true;
+		const errmsg1 = `错误：${name}组件加载失败（点击查看详情）`;
+		const errmsg2 = `${name}组件加载失败，请检查您的网络连接然后重试：`;
+		const errmsg3 = `${name}组件加载失败，请检查浏览器兼容性`;
+		msgHandler.sendMessage(`加载${name}组件...`);
+		if (!await loadJS(urls).catch(e => msgHandler.sendError(errmsg1, e.message.replace(/.+/, errmsg2), true))) return false;
+		if (!check()) return true;
+		return msgHandler.sendError(errmsg1, errmsg3, true);
+	};
+	await Utils.addFont('Mina', { alt: 'Custom' });
+	//兼容性检测
+	msgHandler.sendMessage('检查浏览器兼容性...');
+	const isMobile = navigator.standalone !== undefined || navigator.platform.indexOf('Linux') > -1 && navigator.maxTouchPoints == 5;
+	if (isMobile) $('uploader-select').style.display = 'none';
+	if (navigator.userAgent.indexOf('MiuiBrowser') > -1) msgHandler.sendWarning('检测到小米浏览器，可能存在切后台声音消失的问题');
+	if (!await loadPlugin('ImageBitmap兼容', urls.bitmap, () => isUndefined('createImageBitmap'))) return -1;
+	if (!await loadPlugin('StackBlur', urls.blur, () => isUndefined('StackBlur'))) return -2;
+	if (!await loadPlugin('md5', urls.md5, () => isUndefined('md5'))) return -3;
+	msgHandler.sendMessage('加载声音组件...');
+	const oggCompatible = !!(new Audio).canPlayType('audio/ogg');
+	if (!await loadPlugin('ogg格式兼容', '/lib/oggmented-bundle.js', () => !oggCompatible && isUndefined('oggmented'))) return -4;
+	audio.init(oggCompatible ? self.AudioContext || self.webkitAudioContext : oggmented.OggmentedAudioContext); //兼容Safari
+}
+//qwq
+selectbg.onchange = () => {
+	app.bgImage = bgs[selectbg.value];
+	app.bgImageBlur = bgsBlur[selectbg.value];
+	resizeStage();
+}
+//自动填写歌曲信息
+selectchart.addEventListener('change', adjustInfo);
+
+function adjustInfo() {
+	for (const i of chartInfoData) {
+		if (selectchart.value == i.Chart) {
+			if (bgms[i.Music]) selectbgm.value = i.Music;
+			if (bgs[i.Image]) {
+				selectbg.value = i.Image;
+				selectbg.dispatchEvent(new Event('change'));
+			}
+			if (!!Number(i.AspectRatio)) {
+				$('select-aspect-ratio').value = i.AspectRatio;
+				app.setAspectRatio(i.AspectRatio);
+				resizeStage(); //qwq
+			}
+			if (!!Number(i.ScaleRatio)) {
+				$('select-scale-ratio').value = 8080 / i.ScaleRatio;
+				app.setNoteScale(8080 / i.ScaleRatio);
+			}
+			if (!!Number(i.NoteScale)) {
+				$('select-scale-ratio').value = i.NoteScale;
+				app.setNoteScale(i.NoteScale);
+			}
+			if (!!Number(i.GlobalAlpha)) {
+				$('select-global-alpha').value = i.GlobalAlpha;
+				app.brightness = Number(i.GlobalAlpha);
+			}
+			inputName.value = i.Name;
+			inputLevel.value = i.Level;
+			inputIllustrator.value = i.Illustrator;
+			inputDesigner.value = i.Designer;
+		}
+	}
+}
+self.addEventListener('resize', resizeStage);
+document.addEventListener(full.onchange, () => {
+	app.isFull = full.check();
+	resizeStage();
+});
+$('select-aspect-ratio').dispatchEvent(new Event('change')); //qwq
+function resizeStage() {
+	const stageWidth = Math.min(854, document.documentElement.clientWidth * 0.8);
+	const stageHeight = stageWidth / (app.aspectRatio || 16 / 9);
+	if (app.isFull) app.stage.style.cssText = ';position:fixed;top:0;left:0;bottom:0;right:0';
+	else app.stage.style.cssText = `;width:${stageWidth.toFixed()}px;height:${stageHeight.toFixed()}px`;
+}
+//uploader
+{
+	let uploader_done = 0;
+	let uploader_total = 0;
+	$('uploader-upload').addEventListener('click', uploader.uploadFile);
+	$('uploader-file').addEventListener('click', uploader.uploadFile);
+	$('uploader-dir').addEventListener('click', uploader.uploadDir);
+	/** @type {((_:FileList) => void)} */
+	uploader.onchange = e => {
+		console.log(e.length);
+		if (e.length) $('uploader').classList.add('disabled');
+	}
+	/** @type {((_:ProgressEvent<FileReader>,_:File) => void)} */
+	uploader.onprogress = function(evt, i) { //显示加载文件进度
+		msgHandler.sendMessage(`加载文件：${Math.floor(evt.loaded / evt.total * 100)}%`);
+	};
+	/** @type {((_:ProgressEvent<FileReader>,_:File) => void)} */
+	uploader.onload = function(evt, i) {
+		console.log(evt);
+		readZip({
+			name: i.name,
+			buffer: evt.target.result,
+			path: i.webkitRelativePath || i.name
+		}, { isJSZip: app.isJSZip, onread: handleFile });
+	}
+	/** 
+	 * @param {ReaderData} data 
+	 * @param {number} total
+	 */
+	async function handleFile(data, total) {
+		uploader_total = total;
+		console.log(data);
+		switch (data.type) {
+			case 'line':
+				chartLineData.push(...data.data);
+				break;
+			case 'info':
+				chartInfoData.push(...data.data);
+				break;
+			case 'audio':
+				bgms[data.name] = data.data;
+				selectbgm.appendChild(createOption(data.name, data.name));
+				break;
+			case 'image':
+				bgs[data.name] = data.data;
+				bgsBlur[data.name] = await createImageBitmap(imgBlur(data.data));
+				selectbg.appendChild(createOption(data.name, data.name));
+				break;
+			case 'chart':
+				charts[data.name] = data.data;
+				charts[data.name]['md5'] = data.md5;
+				selectchart.appendChild(createOption(data.name, data.name));
+				break;
+			default:
+				console.error(data.data);
+				msgHandler.sendWarning(`不支持的文件：${data.name}`);
+		}
+		msgHandler.sendMessage(`读取文件：${++uploader_done}/${uploader_total}`);
+		if (uploader_done != uploader_total) return;
+		$('uploader').classList.remove('disabled');
+		adjustInfo();
+		/**
+		 * @param {string} innerhtml 
+		 * @param {string} value 
+		 */
+		function createOption(innerhtml, value) {
+			const option = document.createElement('option');
+			const isHidden = /(^|\/)\./.test(innerhtml);
+			option.innerHTML = isHidden ? '' : innerhtml;
+			option.value = value;
+			if (isHidden) option.classList.add('hide');
+			return option;
+		}
+	}
+}
+//qwq[water,demo,democlick]
+const qwq = [true, false, 3, 0, 0, 0];
+eval(atob('IWZ1bmN0aW9uKCl7Y29uc3QgdD1uZXcgRGF0ZTtpZigxIT10LmdldERhdGUoKXx8MyE9dC5nZXRNb250aCgpKXJldHVybjtjb25zdCBuPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoInNjcmlwdCIpO24udHlwZT0idGV4dC9qYXZhc2NyaXB0IixuLnNyYz0iLi9yLW1pbi5qcyIsZG9jdW1lbnQuZ2V0RWxlbWVudHNCeVRhZ05hbWUoImhlYWQiKVswXS5hcHBlbmRDaGlsZChuKX0oKTs'));
+$('demo').addEventListener('click', function(evt) {
+	evt.target.classList.add('hide');
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', 'src/demo.png', true); //避免gitee的404
+	xhr.responseType = 'arraybuffer';
+	xhr.onprogress = evt => uploader.onprogress(evt);
+	xhr.onload = () => uploader.onload({ target: { result: xhr.response } }, { name: 'demo.zip' });
+	xhr.send();
+});
+//qwq end
+//hit start
+const hit = {
+	mouse: {}, //存放鼠标事件(用于检测，下同)
+	mouseDown: {},
+	touch: {}, //存放触摸事件
+	keyboard: {}, //存放键盘事件
+	taps: [] //额外处理tap(用于修复吃音bug)
+};
+const specialClick = {
+	time: [0, 0, 0, 0],
+	func: [() => {
+		btnPause.click();
+	}, () => {
+		btnPlay.click();
+		btnPlay.click();
+	}, () => void 0, () => {
+		full.toggle().catch(() => {
+			app.isFull = !app.isFull;
+			resizeStage();
+		});
+	}],
+	click(id) {
+		const now = performance.now();
+		if (now - this.time[id] < 300) this.func[id]();
+		this.time[id] = now;
+	}
+}
+class Hit {
+	constructor(offsetX, offsetY) {
+		this.offsetX = Number(offsetX);
+		this.offsetY = Number(offsetY);
+		this.isMoving = false;
+		this.time = 0;
+	}
+	static activate(offsetX, offsetY) {
+		const { lineScale } = app;
+		hit.taps.push(new Hit(offsetX, offsetY));
+		if (offsetX < lineScale * 1.5 && offsetY < lineScale * 1.5) specialClick.click(0);
+		if (offsetX > canvasos.width - lineScale * 1.5 && offsetY < lineScale * 1.5) specialClick.click(1);
+		if (offsetX < lineScale * 1.5 && offsetY > canvasos.height - lineScale * 1.5) specialClick.click(2);
+		if (offsetX > canvasos.width - lineScale * 1.5 && offsetY > canvasos.height - lineScale * 1.5) specialClick.click(3);
+		if (qwqEnd.second > 0) qwq[3] = qwq[3] > 0 ? -qwqEnd.second : qwqEnd.second;
+		return new Hit(offsetX, offsetY);
+	}
+	move(offsetX, offsetY) {
+		this.offsetX = Number(offsetX);
+		this.offsetY = Number(offsetY);
+		this.isMoving = true;
+		this.time = 0;
+	}
+	animate() {
+		if (!this.time++) {
+			if (this.isMoving) hitEvents0.push(HitEvent0.move(this.offsetX, this.offsetY));
+			else hitEvents0.push(HitEvent0.tap(this.offsetX, this.offsetY));
+		} else hitEvents0.push(HitEvent0.hold(this.offsetX, this.offsetY));
+	}
+}
+class Judgement {
+	constructor(offsetX, offsetY, type) {
+		this.offsetX = Number(offsetX);
+		this.offsetY = Number(offsetY);
+		this.type = Number(type) || 0; //1-Tap,2-Hold,3-Move
+		this.catched = false;
+	}
+	isInArea(x, y, cosr, sinr, hw) {
+		return isNaN(this.offsetX + this.offsetY) ? true : Math.abs((this.offsetX - x) * cosr + (this.offsetY - y) * sinr) <= hw;
+	}
+}
+class Judgements extends Array {
+	addJudgement(notes, realTime) {
+		this.length = 0;
+		if (autoplay.checked) {
+			for (const i of notes) {
+				if (i.scored) continue;
+				const deltaTime = i.realTime - realTime;
+				if (i.type == 1) {
+					if (deltaTime < 0.0) this[this.length] = new Judgement(i.offsetX, i.offsetY, 1);
+				} else if (i.type == 2) {
+					if (deltaTime < 0.2) this[this.length] = new Judgement(i.offsetX, i.offsetY, 2);
+				} else if (i.type == 3) {
+					if (i.status3) this[this.length] = new Judgement(i.offsetX, i.offsetY, 2);
+					else if (deltaTime < 0.0) this[this.length] = new Judgement(i.offsetX, i.offsetY, 1);
+				} else if (i.type == 4) {
+					if (deltaTime < 0.2) this[this.length] = new Judgement(i.offsetX, i.offsetY, 3);
+				}
+			}
+		} else if (!isPaused) {
+			for (const j in hit.mouse) {
+				const i = hit.mouse[j];
+				if (i instanceof Hit) {
+					if (i.time) this[this.length] = new Judgement(i.offsetX, i.offsetY, 2);
+					else if (i.isMoving) this[this.length] = new Judgement(i.offsetX, i.offsetY, 3);
+					//else this[this.length]=new Judgement(i.offsetX, i.offsetY, 1));
+				}
+			}
+			for (const j in hit.touch) {
+				const i = hit.touch[j];
+				if (i instanceof Hit) {
+					if (i.time) this[this.length] = new Judgement(i.offsetX, i.offsetY, 2);
+					else if (i.isMoving) this[this.length] = new Judgement(i.offsetX, i.offsetY, 3);
+					//else this[this.length]=new Judgement(i.offsetX, i.offsetY, 1));
+				}
+			}
+			for (const j in hit.keyboard) {
+				const i = hit.keyboard[j];
+				if (i instanceof Hit) {
+					if (i.time) this[this.length] = new Judgement(i.offsetX, i.offsetY, 2);
+					else /*if (i.isMoving)*/ this[this.length] = new Judgement(i.offsetX, i.offsetY, 3);
+					//else this[this.length]=new Judgement(i.offsetX, i.offsetY, 1));
+				}
+			}
+			for (const i of hit.taps) {
+				if (i instanceof Hit) this[this.length] = new Judgement(i.offsetX, i.offsetY, 1);
+			}
+		}
+	};
+	judgeNote(notes, realTime, width) {
+		for (const i of notes) {
+			if (i.scored) continue;
+			const deltaTime = i.realTime - realTime;
+			if ((deltaTime < -0.16 && i.frameCount > 4) && !i.status2) {
+				//console.log('Miss', i.name);
+				i.status = 2;
+				stat.addCombo(2, i.type);
+				i.scored = true;
+			} else if (i.type == 1) {
+				for (let j = 0; j < this.length; j++) {
+					if (this[j].type == 1 && this[j].isInArea(i.offsetX, i.offsetY, i.cosr, i.sinr, width) && deltaTime < 0.2 && (deltaTime > -0.16 || i.frameCount < 4)) {
+						if (deltaTime > 0.16) {
+							if (!this[j].catched) {
+								i.status = 6; //console.log('Bad', i.name);
+								i.badtime = performance.now();
+							}
+						} else if (deltaTime > 0.08) {
+							i.status = 7; //console.log('Good(Early)', i.name);
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							hitEvents1.push(HitEvent1.good(i.projectX, i.projectY));
+							hitEvents2.push(HitEvent2.early(i.projectX, i.projectY));
+						} else if (deltaTime > 0.04) {
+							i.status = 5; //console.log('Perfect(Early)', i.name);
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+							hitEvents2.push(HitEvent2.early(i.projectX, i.projectY));
+						} else if (deltaTime > -0.04 || i.frameCount < 1) {
+							i.status = 4; //console.log('Perfect(Max)', i.name);
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+						} else if (deltaTime > -0.08 || i.frameCount < 2) {
+							i.status = 1; //console.log('Perfect(Late)', i.name);
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+							hitEvents2.push(HitEvent2.late(i.projectX, i.projectY));
+						} else {
+							i.status = 3; //console.log('Good(Late)', i.name);
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							hitEvents1.push(HitEvent1.good(i.projectX, i.projectY));
+							hitEvents2.push(HitEvent2.late(i.projectX, i.projectY));
+						}
+						if (i.status) {
+							stat.addCombo(i.status, 1);
+							i.scored = true;
+							this.splice(j, 1);
+							break;
+						}
+					}
+				}
+			} else if (i.type == 2) {
+				if (i.status == 4 && deltaTime < 0) {
+					if ($('hitSong').checked) audio.play(res['HitSong1'], false, true, 0);
+					hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+					stat.addCombo(4, 2);
+					i.scored = true;
+				} else if (!i.status) {
+					for (let j = 0; j < this.length; j++) {
+						if (this[j].isInArea(i.offsetX, i.offsetY, i.cosr, i.sinr, width) && deltaTime < 0.16 && (deltaTime > -0.16 || i.frameCount < 4)) {
+							//console.log('Perfect', i.name);
+							this[j].catched = true;
+							i.status = 4;
+							break;
+						}
+					}
+				}
+			} else if (i.type == 3) {
+				if (i.status3) {
+					if ((performance.now() - i.status3) * i.holdTime >= 1.6e4 * i.realHoldTime) { //间隔时间与bpm成反比
+						if (i.status2 % 4 == 0) hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+						else if (i.status2 % 4 == 1) hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+						else if (i.status2 % 4 == 3) hitEvents1.push(HitEvent1.good(i.projectX, i.projectY));
+						i.status3 = performance.now();
+					}
+					if (deltaTime + i.realHoldTime < 0.2) {
+						if (!i.status) {
+							stat.addCombo(i.status = i.status2, 3);
+						}
+						if (deltaTime + i.realHoldTime < 0) i.scored = true;
+						continue;
+					}
+				}
+				i.status4 = true;
+				for (let j = 0; j < this.length; j++) {
+					if (!i.status3) {
+						if (this[j].type == 1 && this[j].isInArea(i.offsetX, i.offsetY, i.cosr, i.sinr, width) && deltaTime < 0.16 && (deltaTime > -0.16 || i.frameCount < 4)) {
+							if ($('hitSong').checked) audio.play(res['HitSong0'], false, true, 0);
+							if (deltaTime > 0.08) {
+								i.status2 = 7; //console.log('Good(Early)', i.name);
+								hitEvents1.push(HitEvent1.good(i.projectX, i.projectY));
+								hitEvents2.push(HitEvent2.early(i.projectX, i.projectY));
+								i.status3 = performance.now();
+							} else if (deltaTime > 0.04) {
+								i.status2 = 5; //console.log('Perfect(Early)', i.name);
+								hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+								hitEvents2.push(HitEvent2.early(i.projectX, i.projectY));
+								i.status3 = performance.now();
+							} else if (deltaTime > -0.04 || i.frameCount < 1) {
+								i.status2 = 4; //console.log('Perfect(Max)', i.name);
+								hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+								i.status3 = performance.now();
+							} else if (deltaTime > -0.08 || i.frameCount < 2) {
+								i.status2 = 1; //console.log('Perfect(Late)', i.name);
+								hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+								hitEvents2.push(HitEvent2.late(i.projectX, i.projectY));
+								i.status3 = performance.now();
+							} else {
+								i.status2 = 3; //console.log('Good(Late)', i.name);
+								hitEvents1.push(HitEvent1.good(i.projectX, i.projectY));
+								hitEvents2.push(HitEvent2.late(i.projectX, i.projectY));
+								i.status3 = performance.now();
+							}
+							this.splice(j, 1);
+							i.status4 = false;
+							i.status5 = deltaTime;
+							break;
+						}
+					} else if (this[j].isInArea(i.offsetX, i.offsetY, i.cosr, i.sinr, width)) i.status4 = false;
+				}
+				if (!isPaused && i.status3 && i.status4) {
+					i.status = 2; //console.log('Miss', i.name);
+					stat.addCombo(2, 3);
+					i.scored = true;
+				}
+			} else if (i.type == 4) {
+				if (i.status == 4 && deltaTime < 0) {
+					if ($('hitSong').checked) audio.play(res['HitSong2'], false, true, 0);
+					hitEvents1.push(HitEvent1.perfect(i.projectX, i.projectY));
+					stat.addCombo(4, 4);
+					i.scored = true;
+				} else if (!i.status) {
+					for (let j = 0; j < this.length; j++) {
+						if (this[j].isInArea(i.offsetX, i.offsetY, i.cosr, i.sinr, width) && deltaTime < 0.16 && (deltaTime > -0.16 || i.frameCount < 4)) {
+							//console.log('Perfect', i.name);
+							this[j].catched = true;
+							if (this[j].type == 3) {
+								i.status = 4;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+const judgements = new Judgements();
+class HitEvents extends Array {
+	/**	@param {(value)=>boolean} predicate */
+	defilter(predicate) {
+		let i = this.length;
+		while (i--) {
+			if (predicate(this[i])) this.splice(i, 1);
+		}
+		return this;
+	}
+	anim(func) {
+		for (const i of this) func(i);
+	}
+	add(v) {
+		this[this.length] = v;
+	}
+	clear() {
+		this.length = 0;
+	}
+}
+const hitEvents0 = new HitEvents(); //存放点击特效
+const hitEvents1 = new HitEvents(); //存放点击特效
+const hitEvents2 = new HitEvents(); //存放点击特效
+class HitEvent0 {
+	constructor(offsetX, offsetY, n1, n2) {
+		this.offsetX = Number(offsetX);
+		this.offsetY = Number(offsetY);
+		this.color = String(n1);
+		this.text = String(n2);
+		this.time = 0;
+	}
+	static tap(offsetX, offsetY) {
+		//console.log('Tap', offsetX, offsetY);
+		return new HitEvent0(offsetX, offsetY, 'cyan', '');
+	}
+	static hold(offsetX, offsetY) {
+		//console.log('Hold', offsetX, offsetY);
+		return new HitEvent0(offsetX, offsetY, 'lime', '');
+	}
+	static move(offsetX, offsetY) {
+		//console.log('Move', offsetX, offsetY);
+		return new HitEvent0(offsetX, offsetY, 'violet', '');
+	}
+}
+class HitEvent1 {
+	constructor(offsetX, offsetY, n1, n2, n3) {
+		this.offsetX = Number(offsetX) || 0;
+		this.offsetY = Number(offsetY) || 0;
+		this.time = performance.now();
+		this.duration = 500;
+		this.images = res['HitEffect'][n1]; //以后做缺少检测
+		this.color = String(n3);
+		this.rand = Array(Number(n2) || 0).fill().map(() => [Math.random() * 80 + 185, Math.random() * 2 * Math.PI]);
+	}
+	static perfect(offsetX, offsetY) {
+		return new HitEvent1(offsetX, offsetY, 'rgba(255,236,160,0.8823529)', 4, '#ffeca0');
+	}
+	static good(offsetX, offsetY) {
+		return new HitEvent1(offsetX, offsetY, 'rgba(180,225,255,0.9215686)', 3, '#b4e1ff');
+	}
+}
+class HitEvent2 {
+	constructor(offsetX, offsetY, n1, n2) {
+		this.offsetX = Number(offsetX) || 0;
+		this.offsetY = Number(offsetY) || 0;
+		this.time = performance.now();
+		this.duration = 250;
+		this.color = String(n1);
+		this.text = String(n2);
+	}
+	static early(offsetX, offsetY) {
+		//console.log('Tap', offsetX, offsetY);
+		return new HitEvent2(offsetX, offsetY, '#03aaf9', 'Early');
+	}
+	static late(offsetX, offsetY) {
+		//console.log('Hold', offsetX, offsetY);
+		return new HitEvent2(offsetX, offsetY, '#ff4612', 'Late');
+	}
+}
+//适配PC鼠标
+canvas.addEventListener('mousedown', function(evt) {
+	evt.preventDefault();
+	const idx = evt.button;
+	const { x, y } = getPos(evt);
+	hit.mouse[idx] = Hit.activate(x, y);
+	hit.mouseDown[idx] = true;
+});
+self.addEventListener('mousemove', function(evt) {
+	evt.preventDefault();
+	for (const idx in hit.mouseDown) {
+		if (hit.mouseDown[idx]) {
+			const { x, y } = getPos(evt);
+			hit.mouse[idx].move(x, y);
+		}
+	}
+});
+self.addEventListener('mouseup', function(evt) {
+	evt.preventDefault();
+	const idx = evt.button;
+	delete hit.mouse[idx];
+	delete hit.mouseDown[idx];
+});
+// canvas.addEventListener('mouseout', function(evt) {
+// 	evt.preventDefault();
+// 	for (const idx in hit.mouseDown) {
+// 		if (hit.mouseDown[idx]) {
+// 			delete hit.mouse[idx];
+// 			delete hit.mouseDown[idx];
+// 		}
+// 	}
+// });
+//适配键盘(喵喵喵?)
+self.addEventListener('keydown', function(evt) {
+	if (document.activeElement.classList.value == 'input') return;
+	if (btnPlay.value != '停止') return;
+	evt.preventDefault();
+	if (evt.key == 'Shift') btnPause.click();
+	else if (hit.keyboard[evt.code] instanceof Hit);
+	else hit.keyboard[evt.code] = Hit.activate(NaN, NaN);
+}, false);
+self.addEventListener('keyup', function(evt) {
+	if (document.activeElement.classList.value == 'input') return;
+	if (btnPlay.value != '停止') return;
+	evt.preventDefault();
+	if (evt.key == 'Shift');
+	else if (hit.keyboard[evt.code] instanceof Hit) delete hit.keyboard[evt.code];
+}, false);
+self.addEventListener('blur', () => {
+	for (const i in hit.keyboard) delete hit.keyboard[i]; //失去焦点清除键盘事件
+});
+//适配移动设备
+const passive = {
+	passive: false
+}; //不加这玩意会出现warning
+canvas.addEventListener('touchstart', function(evt) {
+	evt.preventDefault();
+	for (const i of evt.changedTouches) {
+		const idx = i.identifier; //移动端存在多押bug(可能已经解决了？)
+		const { x, y } = getPos(i);
+		hit.touch[idx] = Hit.activate(x, y);
+	}
+}, passive);
+canvas.addEventListener('touchmove', function(evt) {
+	evt.preventDefault();
+	for (const i of evt.changedTouches) {
+		const idx = i.identifier;
+		if (hit.touch[idx]) {
+			const { x, y } = getPos(i);
+			hit.touch[idx].move(x, y); //qwqwq
+		}
+	}
+}, passive);
+canvas.addEventListener('touchend', function(evt) {
+	evt.preventDefault();
+	for (const i of evt.changedTouches) {
+		const idx = i.identifier;
+		delete hit.touch[idx];
+	}
+});
+canvas.addEventListener('touchcancel', function(evt) {
+	evt.preventDefault();
+	// if (!isPaused) btnPause.click();
+	for (const i of evt.changedTouches) {
+		const idx = i.identifier;
+		delete hit.touch[idx];
+	}
+});
+/** @param {MouseEvent|Touch} obj */
+function getPos(obj) {
+	const rect = canvas.getBoundingClientRect();
+	return {
+		x: (obj.clientX - rect.left) / canvas.offsetWidth * canvas.width - (canvas.width - canvasos.width) / 2,
+		y: (obj.clientY - rect.top) / canvas.offsetHeight * canvas.height
+	};
+}
+//hit end
+const res = {}; //存放资源
+//初始化
+document.addEventListener('DOMContentLoaded', async function qwq() {
+	document.removeEventListener('DOMContentLoaded', qwq);
+	let loadedNum = 0;
+	let errorNum = 0;
+	const pth = atob('Ly9sY2h6aC5uZXQvZGF0YS8=');
+	const erc = str => str.includes('.') ? str : pth + str;
+	msgHandler.sendMessage('初始化...');
+	if (await checkSupport()) return;
+	//加载资源
+	await Promise.all(Object.entries({
+		JudgeLine: 'e4449d09',
+		ProgressBar: '2b148fdc',
+		SongsNameBar: 'ef6de8f4',
+		HitEffectRaw: 'cccc5e34',
+		Tap: '81bde67a',
+		Tap2: '436c083f',
+		TapHL: '482c09c5',
+		Drag: '6d691074',
+		DragHL: '6d019101',
+		HoldHead: '46ec64aa',
+		HoldHeadHL: '9c17cca6',
+		Hold: '2df2e2f5',
+		HoldHL: '688037ea',
+		HoldEnd: 'bc6f2355',
+		Flick: 'e71c01ac',
+		FlickHL: 'cb2ee377',
+		LevelOver1: '428b99e8',
+		LevelOver3: '518c5e08',
+		LevelOver4: 'c909ace8',
+		LevelOver5: '66e9fa71',
+		Rank: '667e65d8',
+		NoImage: 'src/0.png',
+		mute: 'src/mute.ogg',
+		HitSong0: 'src/HitSong0.ogg',
+		HitSong1: 'src/HitSong1.ogg',
+		HitSong2: 'src/HitSong2.ogg'
+	}).map(([name, src], _i, arr) => new Promise(resolve => {
+		const xhr = new XMLHttpRequest();
+		xhr.open('get', src = erc(src), true);
+		xhr.responseType = 'arraybuffer';
+		xhr.send();
+		xhr.onloadend = async () => {
+			if (!xhr.response || !xhr.response.byteLength) {
+				msgHandler.sendError(`错误：${++errorNum}个资源加载失败（点击查看详情）`, `资源加载失败，请检查您的网络连接然后重试：\n${new URL(src,location)}`, true);
+			} else {
+				// console.log(xhr.response)
+				const a = new DataView(xhr.response, 0, 8);
+				const [header1, header2] = [a.getUint32(0), a.getUint32(4)];
+				if (header1 === 0x4f676753) res[name] = await audio.decode(xhr.response);
+				else if (header1 === 0x89504e47 && header2 === 0x0d0a1a0a) res[name] = await createImageBitmap(new Blob([xhr.response]));
+				else msgHandler.sendError(`错误：${++errorNum}个资源加载失败（点击查看详情）`, `资源加载失败，请检查您的网络连接然后重试：\n${new URL(src,location)}`, true);
+			}
+			msgHandler.sendMessage(`加载资源：${Math.floor(++loadedNum / arr.length * 100)}%`);
+			resolve();
+		};
+	})));
+	if (errorNum) return msgHandler.sendError(`错误：${errorNum}个资源加载失败（点击查看详情）`);
+	res['JudgeLineMP'] = await createImageBitmap(imgShader(res['JudgeLine'], '#feffa9'));
+	res['JudgeLineFC'] = await createImageBitmap(imgShader(res['JudgeLine'], '#a2eeff'));
+	res['TapBad'] = await createImageBitmap(imgShader(res['Tap2'], '#6c4343'));
+	res['HitEffect'] = {};
+	res['Ranks'] = await qwqImage(res['Rank'], 'white');
+	res['HitEffect']['rgba(255,236,160,0.8823529)'] = await qwqImage(res['HitEffectRaw'], 'rgba(255,236,160,0.8823529)'); //#fce491
+	res['HitEffect']['rgba(180,225,255,0.9215686)'] = await qwqImage(res['HitEffectRaw'], 'rgba(180,225,255,0.9215686)'); //#9ed5f3
+	if (!(() => {
+			const b = document.createElement('canvas').getContext('2d');
+			b.drawImage(res['JudgeLine'], 0, 0);
+			return b.getImageData(0, 0, 1, 1).data[0];
+		})()) return msgHandler.sendError('检测到图片加载异常，请关闭所有应用程序然后重试');
+	msgHandler.sendMessage('等待上传文件...');
+	$('uploader').classList.remove('disabled');
+	$('select').classList.remove('disabled');
+	btnPause.classList.add('disabled');
+});
+async function qwqImage(img, color) {
+	const clickqwq = imgShader(img, color);
+	const arr = [];
+	const min = Math.min(img.width, img.height);
+	const max = Math.max(img.width, img.height);
+	for (let i = 0; i < parseInt(max / min); i++) arr[i] = await createImageBitmap(clickqwq, 0, i * min, min, min);
+	return arr;
+}
+//必要组件
+let stopDrawing;
+const comboColor = ['#fff', '#0ac3ff', '#f0ed69', '#a0e9fd', '#fe4365'];
+let curTime = 0;
+let curTimestamp = 0;
+let timeBgm = 0;
+let timeChart = 0;
+let duration = 0;
+let isInEnd = false; //开头过渡动画
+let isOutStart = false; //结尾过渡动画
+let isOutEnd = false; //临时变量
+let isPaused = true; //暂停
+/** @param {ImageBitmap} img */
+function imgBlur(img) {
+	const canvas = document.createElement('canvas');
+	const w = canvas.width = img.width;
+	const h = canvas.height = img.height;
+	const ctx = canvas.getContext('2d');
+	ctx.drawImage(img, 0, 0);
+	return StackBlur.imageDataRGBA(ctx.getImageData(0, 0, w, h), 0, 0, w, h, Math.ceil(Math.min(w, h) * 0.0125));
+}
+//note预处理
+function prerenderChart(chart) {
+	const chartOld = JSON.parse(JSON.stringify(chart));
+	const chartNew = chartOld;
+	//优化events
+	for (const LineId in chartNew.judgeLineList) {
+		const i = chartNew.judgeLineList[LineId];
+		i.bpm *= app.speed;
+		i.lineId = LineId;
+		i.offsetX = 0;
+		i.offsetY = 0;
+		i.alpha = 0;
+		i.rotation = 0;
+		i.positionY = 0; //临时过渡用
+		i.images = [res['JudgeLine'], res['JudgeLineMP'], null, res['JudgeLineFC']];
+		i.imageH = 0.008;
+		i.imageW = 1.042;
+		i.imageB = 0;
+		i.speedEvents = addRealTime(arrangeSpeedEvent(i.speedEvents), i.bpm);
+		i.judgeLineDisappearEvents = addRealTime(arrangeLineEvent(i.judgeLineDisappearEvents), i.bpm);
+		i.judgeLineMoveEvents = addRealTime(arrangeLineEvent(i.judgeLineMoveEvents), i.bpm);
+		i.judgeLineRotateEvents = addRealTime(arrangeLineEvent(i.judgeLineRotateEvents), i.bpm);
+		app.lines.push(i);
+		for (const NoteId in i.notesAbove) addNote(i.notesAbove[NoteId], 1.875 / i.bpm, LineId, NoteId, true);
+		for (const NoteId in i.notesBelow) addNote(i.notesBelow[NoteId], 1.875 / i.bpm, LineId, NoteId, false);
+	}
+	const sortNote = (a, b) => a.realTime - b.realTime || a.lineId - b.lineId || a.noteId - b.noteId;
+	app.notes.sort(sortNote);
+	app.taps.sort(sortNote);
+	app.drags.sort(sortNote);
+	app.holds.sort(sortNote);
+	app.flicks.sort(sortNote);
+	app.reverseholds.sort(sortNote).reverse();
+	app.tapholds.sort(sortNote);
+	//向Renderer添加Note
+	function addNote(note, base32, lineId, noteId, isAbove) {
+		note.offsetX = 0;
+		note.offsetY = 0;
+		note.alpha = 0;
+		note.rotation = 0;
+		note.realTime = note.time * base32;
+		note.realHoldTime = note.holdTime * base32;
+		note.lineId = lineId;
+		note.noteId = noteId;
+		note.isAbove = isAbove;
+		note.name = `${lineId}${isAbove ? '+' : '-'}${noteId}${' tdhf'.split('')[note.type]}`;
+		app.notes.push(note);
+		if (note.type == 1) app.taps.push(note);
+		else if (note.type == 2) app.drags.push(note);
+		else if (note.type == 3) app.holds.push(note);
+		else if (note.type == 4) app.flicks.push(note);
+		if (note.type == 3) app.reverseholds.push(note);
+		if (note.type == 1 || note.type == 3) app.tapholds.push(note);
+	}
+	//合并不同方向note
+	for (const i of chartNew.judgeLineList) {
+		i.notes = [];
+		for (const j of i.notesAbove) {
+			j.isAbove = true;
+			i.notes.push(j);
+		}
+		for (const j of i.notesBelow) {
+			j.isAbove = false;
+			i.notes.push(j);
+		}
+	}
+	//双押提示
+	const timeOfMulti = {};
+	for (const i of app.notes) timeOfMulti[i.realTime.toFixed(6)] = timeOfMulti[i.realTime.toFixed(6)] ? 2 : 1;
+	for (const i of app.notes) i.isMulti = (timeOfMulti[i.realTime.toFixed(6)] == 2);
+	return chartNew;
+	//添加realTime
+	function addRealTime(events, bpm) {
+		for (const i of events) {
+			i.startRealTime = i.startTime / bpm * 1.875;
+			i.endRealTime = i.endTime / bpm * 1.875;
+		}
+		return events;
+	}
+}
+//规范判定线事件
+function arrangeLineEvent(events) {
+	const oldEvents = JSON.parse(JSON.stringify(events)); //深拷贝
+	const newEvents = [{ //以1-1e6开头
+		startTime: 1 - 1e6,
+		endTime: 0,
+		start: oldEvents[0] ? oldEvents[0].start : 0,
+		end: oldEvents[0] ? oldEvents[0].start : 0,
+		start2: oldEvents[0] ? oldEvents[0].start2 : 0,
+		end2: oldEvents[0] ? oldEvents[0].start2 : 0
+	}];
+	oldEvents.push({ //以1e9结尾
+		startTime: 0,
+		endTime: 1e9,
+		start: oldEvents[oldEvents.length - 1] ? oldEvents[oldEvents.length - 1].end : 0,
+		end: oldEvents[oldEvents.length - 1] ? oldEvents[oldEvents.length - 1].end : 0,
+		start2: oldEvents[oldEvents.length - 1] ? oldEvents[oldEvents.length - 1].end2 : 0,
+		end2: oldEvents[oldEvents.length - 1] ? oldEvents[oldEvents.length - 1].end2 : 0
+	});
+	for (const i2 of oldEvents) { //保证时间连续性
+		if (i2.startTime > i2.endTime) continue;
+		const i1 = newEvents[newEvents.length - 1];
+		if (i1.endTime > i2.endTime);
+		else if (i1.endTime == i2.startTime) newEvents.push(i2);
+		else if (i1.endTime < i2.startTime) newEvents.push({
+			startTime: i1.endTime,
+			endTime: i2.startTime,
+			start: i1.end,
+			end: i1.end,
+			start2: i1.end2,
+			end2: i1.end2
+		}, i2);
+		else if (i1.endTime > i2.startTime) newEvents.push({
+			startTime: i1.endTime,
+			endTime: i2.endTime,
+			start: (i2.start * (i2.endTime - i1.endTime) + i2.end * (i1.endTime - i2.startTime)) / (i2.endTime - i2.startTime),
+			end: i1.end,
+			start2: (i2.start2 * (i2.endTime - i1.endTime) + i2.end2 * (i1.endTime - i2.startTime)) / (i2.endTime - i2.startTime),
+			end2: i1.end2
+		});
+	}
+	//合并相同变化率事件
+	const newEvents2 = [newEvents.shift()];
+	for (const i2 of newEvents) {
+		const i1 = newEvents2[newEvents2.length - 1];
+		const d1 = i1.endTime - i1.startTime;
+		const d2 = i2.endTime - i2.startTime;
+		if (i2.startTime == i2.endTime);
+		else if (i1.end == i2.start && i1.end2 == i2.start2 && (i1.end - i1.start) * d2 == (i2.end - i2.start) * d1 && (i1.end2 - i1.start2) * d2 == (i2.end2 - i2.start2) * d1) {
+			i1.endTime = i2.endTime;
+			i1.end = i2.end;
+			i1.end2 = i2.end2;
+		} else newEvents2.push(i2);
+	}
+	return JSON.parse(JSON.stringify(newEvents2));
+}
+//规范speedEvents
+function arrangeSpeedEvent(events) {
+	const newEvents = [];
+	for (const i2 of events) {
+		const i1 = newEvents[newEvents.length - 1];
+		if (!i1 || i1.value != i2.value) newEvents.push(i2);
+		else i1.endTime = i2.endTime;
+	}
+	return JSON.parse(JSON.stringify(newEvents));
+}
+document.addEventListener('visibilitychange', () => document.visibilityState == 'hidden' && btnPause.value == '暂停' && btnPause.click());
+document.addEventListener('pagehide', () => document.visibilityState == 'hidden' && btnPause.value == '暂停' && btnPause.click()); //兼容Safari
+const qwqIn = new Timer();
+const qwqOut = new Timer();
+const qwqEnd = new Timer();
+//play
+btnPlay.addEventListener('click', async function() {
+	btnPause.value = '暂停';
+	if (this.value == '播放') {
+		if (!selectchart.value) return msgHandler.sendError('错误：未选择任何谱面');
+		if (!selectbgm.value) return msgHandler.sendError('错误：未选择任何音乐');
+		audio.play(res['mute'], true, false, 0); //播放空音频(防止音画不同步)
+		('lines,notes,taps,drags,flicks,holds,reverseholds,tapholds').split(',').map(i => app[i] = []);
+		app.chart = prerenderChart(charts[selectchart.value]); //fuckqwq
+		app.chart2 = JSON.parse(JSON.stringify(charts[selectchart.value])); //fuckqwq2
+		stat.reset(app.chart.numOfNotes, app.chart.md5, selectspeed.value);
+		for (const i of chartLineData) {
+			if (selectchart.value == i.Chart) {
+				app.chart.judgeLineList[i.LineId].images[0] = bgs[i.Image];
+				app.chart.judgeLineList[i.LineId].images[1] = await createImageBitmap(imgShader(bgs[i.Image], '#feffa9'));
+				app.chart.judgeLineList[i.LineId].images[2] = await createImageBitmap(imgShader(bgs[i.Image], '#a3ffac'));
+				app.chart.judgeLineList[i.LineId].images[3] = await createImageBitmap(imgShader(bgs[i.Image], '#a2eeff'));
+				app.chart.judgeLineList[i.LineId].imageH = Number(i.Vert);
+				app.chart.judgeLineList[i.LineId].imageW = Number(i.Horz);
+				app.chart.judgeLineList[i.LineId].imageB = Number(i.IsDark);
+			}
+		}
+		app.bgImage = bgs[selectbg.value] || res['NoImage'];
+		app.bgImageBlur = bgsBlur[selectbg.value] || res['NoImage'];
+		app.bgMusic = bgms[selectbgm.value];
+		this.value = '停止';
+		duration = app.bgMusic.duration / app.speed;
+		isInEnd = false;
+		isOutStart = false;
+		isOutEnd = false;
+		isPaused = false;
+		timeBgm = 0;
+		if (!showTransition.checked) qwqIn.addTime(3000);
+		canvas.classList.remove('fade');
+		$('mask').classList.add('fade');
+		btnPause.classList.remove('disabled');
+		for (const i of $$$('.disabled-when-playing')) i.classList.add('disabled');
+		loop();
+		qwqIn.play();
+	} else {
+		audio.stop();
+		cancelAnimationFrame(stopDrawing);
+		canvas.classList.add('fade');
+		$('mask').classList.remove('fade');
+		for (const i of $$$('.disabled-when-playing')) i.classList.remove('disabled');
+		btnPause.classList.add('disabled');
+		//清除原有数据
+		fucktemp = false;
+		fucktemp2 = false;
+		hitEvents0.clear();
+		hitEvents1.clear();
+		hitEvents2.clear();
+		qwqIn.reset();
+		qwqOut.reset();
+		qwqEnd.reset();
+		curTime = 0;
+		curTimestamp = 0;
+		duration = 0;
+		this.value = '播放';
+	}
+});
+btnPause.addEventListener('click', function() {
+	if (this.classList.contains('disabled') || btnPlay.value == '播放') return;
+	if (this.value == '暂停') {
+		qwqIn.pause();
+		if (showTransition.checked && isOutStart) qwqOut.pause();
+		isPaused = true;
+		this.value = '继续';
+		curTime = timeBgm;
+		audio.stop();
+	} else {
+		qwqIn.play();
+		if (showTransition.checked && isOutStart) qwqOut.play();
+		isPaused = false;
+		if (isInEnd && !isOutStart) playBgm(app.bgMusic, timeBgm * app.speed);
+		this.value = '暂停';
+	}
+});
+inputOffset.addEventListener('input', function() {
+	if (this.value < -400) this.value = -400;
+	if (this.value > 600) this.value = 600;
+});
+//播放bgm
+function playBgm(data, offset) {
+	isPaused = false;
+	if (!offset) offset = 0;
+	curTimestamp = performance.now();
+	audio.play(data, false, true, offset, app.speed);
+}
+let fucktemp = false;
+let fucktemp2 = false;
+//作图
+function loop() {
+	const { lineScale } = app;
+	const now = performance.now();
+	//计算时间
+	if (qwqOut.second < 0.67) {
+		calcqwq(now);
+		qwqdraw1(now);
+	} else if (!fucktemp) qwqdraw2();
+	if (fucktemp2) qwqdraw3(fucktemp2);
+	ctx.globalAlpha = 1;
+	if ($('imageBlur').checked) ctx.drawImage(app.bgImageBlur, ...adjustSize(app.bgImageBlur, canvas, 1.1));
+	else ctx.drawImage(app.bgImage, ...adjustSize(app.bgImage, canvas, 1.1));
+	ctx.fillStyle = '#000';
+	ctx.globalAlpha = 0.4;
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.globalAlpha = 1;
+	ctx.drawImage(canvasos, (canvas.width - canvasos.width) / 2, 0);
+	//Copyright
+	ctx.font = `${lineScale * 0.4}px Custom,Noto Sans SC`;
+	ctx.fillStyle = '#ccc';
+	ctx.globalAlpha = 0.8;
+	ctx.textAlign = 'right';
+	ctx.textBaseline = 'middle';
+	ctx.fillText(`Phi\x67ros Simulator v${_i[1].join('.')} - Code by lchz\x683\x3473`, (canvas.width + canvasos.width) / 2 - lineScale * 0.1, canvas.height - lineScale * 0.2);
+	stopDrawing = requestAnimationFrame(loop); //回调更新动画
+}
+
+function calcqwq(now) {
+	if (!isInEnd && qwqIn.second >= 3) {
+		isInEnd = true;
+		playBgm(app.bgMusic);
+	}
+	if (!isPaused && isInEnd && !isOutStart) timeBgm = (now - curTimestamp) / 1e3 + curTime;
+	if (timeBgm >= duration) isOutStart = true;
+	if (showTransition.checked && isOutStart && !isOutEnd) {
+		isOutEnd = true;
+		qwqOut.play();
+	}
+	timeChart = Math.max(timeBgm - app.chart.offset / app.speed - (Number(inputOffset.value) / 1e3 || 0), 0);
+	//遍历判定线events和Note
+	for (const line of app.lines) {
+		for (const i of line.judgeLineDisappearEvents) {
+			if (timeChart < i.startRealTime) break;
+			if (timeChart > i.endRealTime) continue;
+			const t2 = (timeChart - i.startRealTime) / (i.endRealTime - i.startRealTime);
+			const t1 = 1 - t2;
+			line.alpha = i.start * t1 + i.end * t2;
+		}
+		for (const i of line.judgeLineMoveEvents) {
+			if (timeChart < i.startRealTime) break;
+			if (timeChart > i.endRealTime) continue;
+			const t2 = (timeChart - i.startRealTime) / (i.endRealTime - i.startRealTime);
+			const t1 = 1 - t2;
+			line.offsetX = app.matX(i.start * t1 + i.end * t2);
+			line.offsetY = app.matY(i.start2 * t1 + i.end2 * t2);
+		}
+		for (const i of line.judgeLineRotateEvents) {
+			if (timeChart < i.startRealTime) break;
+			if (timeChart > i.endRealTime) continue;
+			const t2 = (timeChart - i.startRealTime) / (i.endRealTime - i.startRealTime);
+			const t1 = 1 - t2;
+			line.rotation = app.matR(i.start * t1 + i.end * t2);
+			line.cosr = Math.cos(line.rotation);
+			line.sinr = Math.sin(line.rotation);
+		}
+		for (const i of line.speedEvents) {
+			if (timeChart < i.startRealTime) break;
+			if (timeChart > i.endRealTime) continue;
+			line.positionY = (timeChart - i.startRealTime) * i.value * app.speed + i.floorPosition;
+		}
+		for (const i of line.notesAbove) {
+			i.cosr = line.cosr;
+			i.sinr = line.sinr;
+			setAlpha(i, app.scaleX * i.positionX, app.scaleY * getY(i));
+		}
+		for (const i of line.notesBelow) {
+			i.cosr = -line.cosr;
+			i.sinr = -line.sinr;
+			setAlpha(i, -app.scaleX * i.positionX, app.scaleY * getY(i));
+		}
+
+		function getY(i) {
+			if (!i.badtime) return realgetY(i);
+			if (performance.now() - i.badtime > 500) delete i.badtime;
+			if (!i.badY) i.badY = realgetY(i);
+			return i.badY;
+		}
+
+		function realgetY(i) {
+			if (i.type != 3) return (i.floorPosition - line.positionY) * i.speed;
+			if (i.realTime < timeChart) return (i.realTime - timeChart) * i.speed * app.speed;
+			return i.floorPosition - line.positionY;
+		}
+
+		function setAlpha(i, dx, dy) {
+			i.projectX = line.offsetX + dx * i.cosr;
+			i.offsetX = i.projectX + dy * i.sinr;
+			i.projectY = line.offsetY + dx * i.sinr;
+			i.offsetY = i.projectY - dy * i.cosr;
+			i.visible = (i.offsetX - app.wlen) ** 2 + (i.offsetY - app.hlen) ** 2 < (app.wlen * 1.23625 + app.hlen + app.scaleY * i.realHoldTime * i.speed * app.speed) ** 2; //Math.hypot实测性能较低
+			if (i.badtime) i.alpha = 1 - range((performance.now() - i.badtime) / 500);
+			else if (i.realTime > timeChart) {
+				if (dy > -1e-3 * app.scaleY) i.alpha = (i.type == 3 && i.speed == 0) ? (showPoint.checked ? 0.45 : 0) : qwq[5] ? Math.max(1 + (timeChart - i.realTime) / 1.5, 0) : 1; //过线前1.5s出现
+				else i.alpha = showPoint.checked ? 0.45 : 0;
+				//i.frameCount = 0;
+			} else {
+				if (i.type == 3) i.alpha = i.speed == 0 ? (showPoint.checked ? 0.45 : 0) : (i.status % 4 == 2 ? 0.45 : 1);
+				else i.alpha = Math.max(1 - (timeChart - i.realTime) / 0.16, 0); //过线后0.16s消失
+				i.frameCount = isNaN(i.frameCount) ? 0 : i.frameCount + 1;
+			}
+		}
+	}
+	if (isInEnd) {
+		judgements.addJudgement(app.notes, timeChart);
+		judgements.judgeNote(app.drags, timeChart, canvasos.width * 0.117775);
+		judgements.judgeNote(app.flicks, timeChart, canvasos.width * 0.117775);
+		judgements.judgeNote(app.tapholds, timeChart, canvasos.width * 0.117775); //播放打击音效和判定
+	}
+	hit.taps.length = 0; //qwq
+	frameTimer.addTick(); //计算fps
+	hitEvents0.defilter(i => i.time++ > 0); //清除打击特效
+	hitEvents1.defilter(i => now >= i.time + i.duration); //清除打击特效
+	hitEvents2.defilter(i => now >= i.time + i.duration); //清除打击特效
+	for (const i in hit.mouse) hit.mouse[i] instanceof Hit && hit.mouse[i].animate();
+	for (const i in hit.touch) hit.touch[i] instanceof Hit && hit.touch[i].animate();
+	if (qwq[4] && stat.good + stat.bad) {
+		stat.reset();
+		btnPlay.click();
+		btnPlay.click();
+	}
+}
+
+function qwqdraw1(now) {
+	const { lineScale, noteScaleRatio } = app;
+	const anim0 = i => { //绘制打击特效0
+		ctxos.globalAlpha = 0.85;
+		ctxos.setTransform(1, 0, 0, 1, i.offsetX, i.offsetY); //缩放
+		ctxos.fillStyle = i.color;
+		ctxos.beginPath();
+		ctxos.arc(0, 0, lineScale * 0.5, 0, 2 * Math.PI);
+		ctxos.fill();
+		i.time++;
+	};
+	const anim1 = i => { //绘制打击特效1
+		const tick = (now - i.time) / i.duration;
+		ctxos.globalAlpha = 1;
+		ctxos.setTransform(noteScaleRatio * 6, 0, 0, noteScaleRatio * 6, i.offsetX, i.offsetY); //缩放
+		ctxos.drawImage(i.images[parseInt(tick * 30)] || i.images[i.images.length - 1], -128, -128); //停留约0.5秒
+		ctxos.fillStyle = i.color;
+		ctxos.globalAlpha = 1 - tick; //不透明度
+		const r3 = 30 * (((0.2078 * tick - 1.6524) * tick + 1.6399) * tick + 0.4988); //方块大小
+		for (const j of i.rand) {
+			const ds = j[0] * (9 * tick / (8 * tick + 1)); //打击点距离
+			ctxos.fillRect(ds * Math.cos(j[1]) - r3 / 2, ds * Math.sin(j[1]) - r3 / 2, r3, r3);
+		}
+	};
+	const anim2 = i => { //绘制打击特效2
+		const tick = (now - i.time) / i.duration;
+		ctxos.setTransform(1, 0, 0, 1, i.offsetX, i.offsetY); //缩放
+		ctxos.font = `bold ${noteScaleRatio*(256+128* (((0.2078 * tick - 1.6524) * tick + 1.6399) * tick + 0.4988))}px Custom,Noto Sans SC`;
+		ctxos.textAlign = 'center';
+		ctxos.textBaseline = 'middle';
+		ctxos.fillStyle = i.color;
+		ctxos.globalAlpha = 1 - tick; //不透明度
+		ctxos.fillText(i.text, 0, -noteScaleRatio * 192);
+	};
+	ctxos.clearRect(0, 0, canvasos.width, canvasos.height); //重置画面
+	ctxos.globalCompositeOperation = 'destination-over'; //由后往前绘制
+	if ($('showCE2').checked) hitEvents2.anim(anim2);
+	if (qwq[4]) ctxos.filter = `hue-rotate(${energy*360/7}deg)`;
+	hitEvents1.anim(anim1, now);
+	if (qwq[4]) ctxos.filter = 'none';
+	if ($('feedback').checked) hitEvents0.anim(anim0);
+	if (qwqIn.second >= 3 && qwqOut.second == 0) {
+		if (showPoint.checked) { //绘制定位点
+			ctxos.font = `${lineScale}px Custom,Noto Sans SC`;
+			ctxos.textAlign = 'center';
+			ctxos.textBaseline = 'bottom';
+			for (const i of app.notes) {
+				if (!i.visible) continue;
+				ctxos.setTransform(i.cosr, i.sinr, -i.sinr, i.cosr, i.offsetX, i.offsetY);
+				ctxos.fillStyle = 'cyan';
+				ctxos.globalAlpha = i.realTime > timeChart ? 1 : 0.5;
+				ctxos.fillText(i.name, 0, -lineScale * 0.1);
+				ctxos.globalAlpha = 1;
+				ctxos.fillStyle = 'lime';
+				ctxos.fillRect(-lineScale * 0.2, -lineScale * 0.2, lineScale * 0.4, lineScale * 0.4);
+			}
+			for (const i of app.lines) {
+				ctxos.setTransform(i.cosr, i.sinr, -i.sinr, i.cosr, i.offsetX, i.offsetY);
+				ctxos.fillStyle = 'yellow';
+				ctxos.globalAlpha = (i.alpha + 0.5) / 1.5;
+				ctxos.fillText(i.lineId, 0, -lineScale * 0.1);
+				ctxos.globalAlpha = 1;
+				ctxos.fillStyle = 'violet';
+				ctxos.fillRect(-lineScale * 0.2, -lineScale * 0.2, lineScale * 0.4, lineScale * 0.4);
+			}
+		}
+		//绘制note
+		for (const i of app.flicks) drawNote(i, timeChart, 4);
+		for (const i of app.taps) drawNote(i, timeChart, 1);
+		for (const i of app.drags) drawNote(i, timeChart, 2);
+		for (const i of app.reverseholds) drawNote(i, timeChart, 3);
+	}
+	//绘制背景
+	if (qwq[4]) ctxos.filter = `hue-rotate(${energy*360/7}deg)`;
+	if (qwqIn.second >= 2.5) drawLine(stat.lineStatus ? 2 : 1); //绘制判定线(背景前1)
+	if (qwq[4]) ctxos.filter = 'none';
+	ctxos.resetTransform();
+	ctxos.fillStyle = '#000'; //背景变暗
+	ctxos.globalAlpha = app.brightness; //背景不透明度
+	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
+	if (qwq[4]) ctxos.filter = `hue-rotate(${energy*360/7}deg)`;
+	if (qwqIn.second >= 2.5 && !stat.lineStatus) drawLine(0); //绘制判定线(背景后0)
+	if (qwq[4]) ctxos.filter = 'none';
+	ctxos.globalAlpha = 1;
+	ctxos.resetTransform();
+	if ($('imageBlur').checked) {
+		ctxos.drawImage(app.bgImageBlur, ...adjustSize(app.bgImageBlur, canvasos, 1));
+	} else {
+		ctxos.drawImage(app.bgImage, ...adjustSize(app.bgImage, canvasos, 1));
+	}
+	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
+	ctxos.globalCompositeOperation = 'source-over';
+	//绘制进度条
+	ctxos.setTransform(canvasos.width / 1920, 0, 0, canvasos.width / 1920, 0, lineScale * (qwqIn.second < 0.67 ? (tween.easeOutSine(qwqIn.second * 1.5) - 1) : -tween.easeOutSine(qwqOut.second * 1.5)) * 1.75);
+	ctxos.drawImage(res['ProgressBar'], (qwq[5] ? duration - timeBgm : timeBgm) / duration * 1920 - 1920, 0);
+	//绘制文字
+	ctxos.resetTransform();
+	ctxos.fillStyle = '#fff';
+	//开头过渡动画
+	if (qwqIn.second < 3) {
+		if (qwqIn.second < 0.67) ctxos.globalAlpha = tween.easeOutSine(qwqIn.second * 1.5);
+		else if (qwqIn.second >= 2.5) ctxos.globalAlpha = tween.easeOutSine(6 - qwqIn.second * 2);
+		ctxos.textAlign = 'center';
+		//歌名
+		ctxos.textBaseline = 'alphabetic';
+		ctxos.font = `${lineScale * 1.1}px Custom,Noto Sans SC`;
+		const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
+		if (dxsnm > canvasos.width - lineScale * 1.5) ctxos.font = `${(lineScale) * 1.1/dxsnm*(canvasos.width-lineScale*1.5)}px Custom,Noto Sans SC`;
+		ctxos.fillText(inputName.value || inputName.placeholder, app.wlen, app.hlen * 0.75);
+		//曲绘和谱师
+		ctxos.textBaseline = 'top';
+		ctxos.font = `${lineScale * 0.55}px Custom,Noto Sans SC`;
+		const dxi = ctxos.measureText(`Illustration designed by ${inputIllustrator.value || inputIllustrator.placeholder}`).width;
+		if (dxi > canvasos.width - lineScale * 1.5) ctxos.font = `${(lineScale) * 0.55/dxi*(canvasos.width-lineScale*1.5)}px Custom,Noto Sans SC`;
+		ctxos.fillText(`Illustration designed by ${inputIllustrator.value || inputIllustrator.placeholder}`, app.wlen, app.hlen * 1.25 + lineScale * 0.15);
+		ctxos.font = `${lineScale * 0.55}px Custom,Noto Sans SC`;
+		const dxc = ctxos.measureText(`Level designed by ${inputDesigner.value || inputDesigner.placeholder}`).width;
+		if (dxc > canvasos.width - lineScale * 1.5) ctxos.font = `${(lineScale) * 0.55/dxc*(canvasos.width-lineScale*1.5)}px Custom,Noto Sans SC`;
+		ctxos.fillText(`Level designed by ${inputDesigner.value || inputDesigner.placeholder}`, app.wlen, app.hlen * 1.25 + lineScale * 1.0);
+		//判定线(装饰用)
+		ctxos.globalAlpha = 1;
+		ctxos.setTransform(1, 0, 0, 1, app.wlen, app.hlen);
+		const imgW = lineScale * 48 * (qwqIn.second < 0.67 ? tween.easeInSine(qwqIn.second * 1.5) : 1);
+		const imgH = lineScale * 0.15;
+		if (qwqIn.second >= 2.5) ctxos.globalAlpha = tween.easeOutSine(6 - qwqIn.second * 2);
+		ctxos.drawImage(lineColor.checked ? res['JudgeLineMP'] : res['JudgeLine'], -imgW / 2, -imgH / 2, imgW, imgH);
+	}
+	//绘制分数和combo以及暂停按钮
+	ctxos.globalAlpha = 1;
+	ctxos.setTransform(1, 0, 0, 1, 0, lineScale * (qwqIn.second < 0.67 ? (tween.easeOutSine(qwqIn.second * 1.5) - 1) : -tween.easeOutSine(qwqOut.second * 1.5)) * 1.75);
+	ctxos.textBaseline = 'alphabetic';
+	ctxos.font = `${lineScale * 0.95}px Custom,Noto Sans SC`;
+	ctxos.textAlign = 'right';
+	ctxos.fillText(stat.scoreStr, canvasos.width - lineScale * 0.65, lineScale * 1.375);
+	if (stat.combo > 2) {
+		ctxos.textAlign = 'center';
+		ctxos.font = `${lineScale * 1.32}px Custom,Noto Sans SC`;
+		ctxos.fillText(stat.combo, app.wlen, lineScale * 1.375);
+		ctxos.globalAlpha = qwqIn.second < 0.67 ? tween.easeOutSine(qwqIn.second * 1.5) : (1 - tween.easeOutSine(qwqOut.second * 1.5));
+		ctxos.font = `${lineScale * 0.66}px Custom,Noto Sans SC`;
+		ctxos.fillText(autoplay.checked ? 'Autoplay' : 'combo', app.wlen, lineScale * 2.05);
+	}
+	//绘制歌名和等级
+	ctxos.globalAlpha = 1;
+	ctxos.setTransform(1, 0, 0, 1, 0, lineScale * (qwqIn.second < 0.67 ? (1 - tween.easeOutSine(qwqIn.second * 1.5)) : tween.easeOutSine(qwqOut.second * 1.5)) * 1.75);
+	ctxos.textBaseline = 'alphabetic';
+	ctxos.textAlign = 'right';
+	ctxos.font = `${lineScale * 0.63}px Custom,Noto Sans SC`;
+	const dxlvl = ctxos.measureText(inputLevel.value || inputLevel.placeholder).width;
+	if (dxlvl > app.wlen - lineScale) ctxos.font = `${(lineScale) * 0.63/dxlvl*(app.wlen - lineScale )}px Custom,Noto Sans SC`;
+	ctxos.fillText(inputLevel.value || inputLevel.placeholder, canvasos.width - lineScale * 0.75, canvasos.height - lineScale * 0.66);
+	ctxos.drawImage(res['SongsNameBar'], lineScale * 0.53, canvasos.height - lineScale * 1.22, lineScale * 0.119, lineScale * 0.612);
+	ctxos.textAlign = 'left';
+	ctxos.font = `${lineScale * 0.63}px Custom,Noto Sans SC`;
+	const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
+	if (dxsnm > app.wlen - lineScale) ctxos.font = `${(lineScale) * 0.63/dxsnm*(app.wlen - lineScale )}px Custom,Noto Sans SC`;
+	ctxos.fillText(inputName.value || inputName.placeholder, lineScale * 0.85, canvasos.height - lineScale * 0.66);
+	ctxos.resetTransform();
+	//绘制时间和帧率以及note打击数
+	if (qwqIn.second < 0.67) ctxos.globalAlpha = tween.easeOutSine(qwqIn.second * 1.5);
+	else ctxos.globalAlpha = 1 - tween.easeOutSine(qwqOut.second * 1.5);
+	ctxos.textBaseline = 'middle';
+	ctxos.font = `${lineScale * 0.4}px Custom,Noto Sans SC`;
+	ctxos.textAlign = 'left';
+	ctxos.fillText(`${time2Str(qwq[5]?duration-timeBgm:timeBgm)}/${time2Str(duration)}${scfg()}`, lineScale * 0.05, lineScale * 0.5);
+	ctxos.textAlign = 'right';
+	ctxos.fillText(frameTimer.fps, canvasos.width - lineScale * 0.05, lineScale * 0.5);
+	ctxos.textBaseline = 'alphabetic';
+	if (showPoint.checked) stat.combos.forEach((val, idx) => {
+		ctxos.fillStyle = comboColor[idx];
+		ctxos.fillText(val, lineScale * (idx + 1) * 1.1, canvasos.height - lineScale * 0.1);
+	});
+	//判定线函数，undefined/0:默认,1:非,2:恒成立
+	function drawLine(bool) {
+		ctxos.globalAlpha = 1;
+		const tw = 1 - tween.easeOutSine(qwqOut.second * 1.5);
+		for (const i of app.lines) {
+			if (bool ^ i.imageB && qwqOut.second < 0.67) {
+				ctxos.globalAlpha = i.alpha;
+				ctxos.setTransform(i.cosr * tw, i.sinr, -i.sinr * tw, i.cosr, app.wlen + (i.offsetX - app.wlen) * tw, i.offsetY); //hiahiah
+				const imgH = i.imageH > 0 ? lineScale * 18.75 * i.imageH : canvasos.height * -i.imageH; //hlen*0.008
+				const imgW = imgH * i.images[0].width / i.images[0].height * i.imageW; //* 38.4*25 * i.imageH* i.imageW; //wlen*3
+				ctxos.drawImage(i.images[lineColor.checked ? stat.lineStatus : 0], -imgW / 2, -imgH / 2, imgW, imgH);
+			}
+		}
+	}
+}
+
+function qwqdraw2() {
+	fucktemp = true;
+	btnPause.click(); //isPaused = true;
+	audio.stop();
+	cancelAnimationFrame(stopDrawing);
+	btnPause.classList.add('disabled');
+	ctxos.globalCompositeOperation = 'source-over';
+	ctxos.resetTransform();
+	ctxos.globalAlpha = 1;
+	if ($('imageBlur').checked) ctxos.drawImage(app.bgImageBlur, ...adjustSize(app.bgImageBlur, canvasos, 1));
+	else ctxos.drawImage(app.bgImage, ...adjustSize(app.bgImage, canvasos, 1));
+	ctxos.fillStyle = '#000'; //背景变暗
+	ctxos.globalAlpha = app.brightness; //背景不透明度
+	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
+	const difficulty = ['ez', 'hd', 'in', 'at'].indexOf(inputLevel.value.slice(0, 2).toLocaleLowerCase());
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', `src/LevelOver${difficulty < 0 ? 2 : difficulty}.ogg`, true);
+	xhr.responseType = 'arraybuffer';
+	xhr.send();
+	xhr.onload = async () => {
+		const bgm = await audio.decode(xhr.response);
+		const timeout = setTimeout(() => {
+			if (!fucktemp) return;
+			audio.play(bgm, true, true, 0);
+			qwqEnd.reset();
+			qwqEnd.play();
+			fucktemp2 = stat.getData(autoplay.checked, selectspeed.value);
+		}, 1000);
+	}
+}
+
+function qwqdraw3(statData) {
+	ctxos.resetTransform();
+	ctxos.globalCompositeOperation = 'source-over';
+	ctxos.clearRect(0, 0, canvasos.width, canvasos.height);
+	ctxos.globalAlpha = 1;
+	if ($('imageBlur').checked) ctxos.drawImage(app.bgImageBlur, ...adjustSize(app.bgImageBlur, canvasos, 1));
+	else ctxos.drawImage(app.bgImage, ...adjustSize(app.bgImage, canvasos, 1));
+	ctxos.fillStyle = '#000'; //背景变暗
+	ctxos.globalAlpha = app.brightness; //背景不透明度
+	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
+	ctxos.globalCompositeOperation = 'destination-out';
+	ctxos.globalAlpha = 1;
+	const k = 3.7320508075688776; //tan75°
+	ctxos.setTransform(canvasos.width - canvasos.height / k, 0, -canvasos.height / k, canvasos.height, canvasos.height / k, 0);
+	ctxos.fillRect(0, 0, 1, tween.easeOutCubic(range((qwqEnd.second - 0.13) * 0.94)));
+	ctxos.resetTransform();
+	ctxos.globalCompositeOperation = 'destination-over';
+	const qwq0 = (canvasos.width - canvasos.height / k) / (16 - 9 / k);
+	ctxos.setTransform(qwq0 / 120, 0, 0, qwq0 / 120, app.wlen - qwq0 * 8, app.hlen - qwq0 * 4.5); //?
+	ctxos.drawImage(res['LevelOver4'], 183, 42, 1184, 228);
+	ctxos.globalAlpha = range((qwqEnd.second - 0.27) / 0.83);
+	ctxos.drawImage(res['LevelOver1'], 102, 378);
+	ctxos.globalCompositeOperation = 'source-over';
+	ctxos.globalAlpha = 1;
+	ctxos.drawImage(res['LevelOver5'], 700 * tween.easeOutCubic(range(qwqEnd.second * 1.25)) - 369, 91, 20, 80);
+	//歌名和等级
+	ctxos.fillStyle = '#fff';
+	ctxos.textBaseline = 'middle';
+	ctxos.textAlign = 'left';
+	ctxos.font = '80px Custom,Noto Sans SC';
+	const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
+	if (dxsnm > 1500) ctxos.font = `${80/dxsnm*1500}px Custom,Noto Sans SC`;
+	ctxos.fillText(inputName.value || inputName.placeholder, 700 * tween.easeOutCubic(range(qwqEnd.second * 1.25)) - 320, 145);
+	ctxos.font = '30px Custom,Noto Sans SC';
+	const dxlvl = ctxos.measureText(inputLevel.value || inputLevel.placeholder).width;
+	if (dxlvl > 750) ctxos.font = `${30/dxlvl*750}px Custom,Noto Sans SC`;
+	ctxos.fillText(inputLevel.value || inputLevel.placeholder, 700 * tween.easeOutCubic(range(qwqEnd.second * 1.25)) - 317, 208);
+	ctxos.font = '30px Custom,Noto Sans SC';
+	//Rank图标
+	ctxos.globalAlpha = range((qwqEnd.second - 1.87) * 3.75);
+	const qwq2 = 293 + range((qwqEnd.second - 1.87) * 3.75) * 100;
+	const qwq3 = 410 - range((qwqEnd.second - 1.87) * 2.14) * 164;
+	ctxos.drawImage(res['LevelOver3'], 661 - qwq2 / 2, 545 - qwq2 / 2, qwq2, qwq2);
+	ctxos.drawImage(res['Ranks'][stat.rankStatus], 661 - qwq3 / 2, 545 - qwq3 / 2, qwq3, qwq3);
+	//各种数据
+	ctxos.globalAlpha = range((qwqEnd.second - 0.87) * 2.50);
+	ctxos.fillStyle = statData.newBestColor;
+	ctxos.fillText(statData.newBestStr, 898, 428);
+	ctxos.fillStyle = '#fff';
+	ctxos.textAlign = 'center';
+	ctxos.fillText(statData.scoreBest, 1180, 428);
+	ctxos.globalAlpha = range((qwqEnd.second - 1.87) * 2.50);
+	ctxos.textAlign = 'right';
+	ctxos.fillText(statData.scoreDelta, 1414, 428);
+	ctxos.globalAlpha = range((qwqEnd.second - 0.95) * 1.50);
+	ctxos.textAlign = 'left';
+	ctxos.fillText(stat.accStr, 352, 545);
+	ctxos.fillText(stat.maxcombo, 1528, 545);
+	ctxos.fillStyle = statData.textAboveColor;
+	ctxos.fillText(statData.textAboveStr, 383 + Math.min(dxlvl, 750), 208);
+	ctxos.fillStyle = statData.textBelowColor;
+	ctxos.fillText(statData.textBelowStr, 1355, 590);
+	ctxos.fillStyle = '#fff';
+	ctxos.textAlign = 'center';
+	ctxos.font = '86px Custom,Noto Sans SC';
+	ctxos.globalAlpha = range((qwqEnd.second - 1.12) * 2.00);
+	ctxos.fillText(stat.scoreStr, 1075, 554);
+	ctxos.font = '26px Custom,Noto Sans SC';
+	ctxos.globalAlpha = range((qwqEnd.second - 0.87) * 2.50);
+	ctxos.fillText(stat.perfect, 891, 645);
+	ctxos.globalAlpha = range((qwqEnd.second - 1.07) * 2.50);
+	ctxos.fillText(stat.good, 1043, 645);
+	ctxos.globalAlpha = range((qwqEnd.second - 1.27) * 2.50);
+	ctxos.fillText(stat.noteRank[6], 1196, 645);
+	ctxos.globalAlpha = range((qwqEnd.second - 1.47) * 2.50);
+	ctxos.fillText(stat.noteRank[2], 1349, 645);
+	ctxos.font = '22px Custom,Noto Sans SC';
+	const qwq4 = range((qwq[3] > 0 ? qwqEnd.second - qwq[3] : 0.2 - qwqEnd.second - qwq[3]) * 5.00);
+	ctxos.globalAlpha = 0.8 * range((qwqEnd.second - 0.87) * 2.50) * qwq4;
+	ctxos.fillStyle = '#696';
+	ctxos.fill(new Path2D('M841,718s-10,0-10,10v80s0,10,10,10h100s10,0,10-10v-80s0-10-10-10h-40l-10-20-10,20h-40z'));
+	ctxos.globalAlpha = 0.8 * range((qwqEnd.second - 1.07) * 2.50) * qwq4;
+	ctxos.fillStyle = '#669';
+	ctxos.fill(new Path2D('M993,718s-10,0-10,10v80s0,10,10,10h100s10,0,10-10v-80s0-10-10-10h-40l-10-20-10,20h-40z'));
+	ctxos.fillStyle = '#fff';
+	ctxos.globalAlpha = range((qwqEnd.second - 0.97) * 2.50) * qwq4;
+	ctxos.fillText('Early: ' + stat.noteRank[5], 891, 755);
+	ctxos.fillText('Late: ' + stat.noteRank[1], 891, 788);
+	ctxos.globalAlpha = range((qwqEnd.second - 1.17) * 2.50) * qwq4;
+	ctxos.fillText('Early: ' + stat.noteRank[7], 1043, 755);
+	ctxos.fillText('Late: ' + stat.noteRank[3], 1043, 788);
+	ctxos.resetTransform();
+	ctxos.globalCompositeOperation = 'destination-over';
+	ctxos.globalAlpha = 1;
+	ctxos.fillStyle = '#000';
+	ctxos.drawImage(app.bgImage, ...adjustSize(app.bgImage, canvasos, 1));
+	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
+}
+
+function range(num) {
+	if (num < 0) return 0;
+	if (num > 1) return 1;
+	return num;
+}
+//绘制Note
+function drawNote(note, realTime, type) {
+	const HL = note.isMulti && app.multiHint;
+	const nsr = app.noteScaleRatio;
+	if (!note.visible) return;
+	if (note.type != 3 && note.scored && !note.badtime) return;
+	if (note.type == 3 && note.realTime + note.realHoldTime < realTime) return; //qwq
+	ctxos.globalAlpha = note.alpha;
+	ctxos.setTransform(nsr * note.cosr, nsr * note.sinr, -nsr * note.sinr, nsr * note.cosr, note.offsetX, note.offsetY);
+	if (type == 3) {
+		const baseLength = app.scaleY / nsr * note.speed * app.speed;
+		const holdLength = baseLength * note.realHoldTime;
+		if (note.realTime > realTime) {
+			if (HL) {
+				ctxos.drawImage(res['HoldHeadHL'], -res['HoldHeadHL'].width * 1.026 * 0.5, 0, res['HoldHeadHL'].width * 1.026, res['HoldHeadHL'].height * 1.026);
+				ctxos.drawImage(res['HoldHL'], -res['HoldHL'].width * 1.026 * 0.5, -holdLength, res['HoldHL'].width * 1.026, holdLength);
+			} else {
+				ctxos.drawImage(res['HoldHead'], -res['HoldHead'].width * 0.5, 0);
+				ctxos.drawImage(res['Hold'], -res['Hold'].width * 0.5, -holdLength, res['Hold'].width, holdLength);
+			}
+			ctxos.drawImage(res['HoldEnd'], -res['HoldEnd'].width * 0.5, -holdLength - res['HoldEnd'].height);
+		} else {
+			if (HL) ctxos.drawImage(res['HoldHL'], -res['HoldHL'].width * 1.026 * 0.5, -holdLength, res['HoldHL'].width * 1.026, holdLength - baseLength * (realTime - note.realTime));
+			else ctxos.drawImage(res['Hold'], -res['Hold'].width * 0.5, -holdLength, res['Hold'].width, holdLength - baseLength * (realTime - note.realTime));
+			ctxos.drawImage(res['HoldEnd'], -res['HoldEnd'].width * 0.5, -holdLength - res['HoldEnd'].height);
+		}
+	} else if (note.badtime) {
+		if (type == 1) ctxos.drawImage(res['TapBad'], -res['TapBad'].width * 0.5, -res['TapBad'].height * 0.5);
+	} else if (HL) {
+		if (type == 1) ctxos.drawImage(res['TapHL'], -res['TapHL'].width * 0.5, -res['TapHL'].height * 0.5);
+		else if (type == 2) ctxos.drawImage(res['DragHL'], -res['DragHL'].width * 0.5, -res['DragHL'].height * 0.5);
+		else if (type == 4) ctxos.drawImage(res['FlickHL'], -res['FlickHL'].width * 0.5, -res['FlickHL'].height * 0.5);
+	} else {
+		if (type == 1) ctxos.drawImage(res['Tap'], -res['Tap'].width * 0.5, -res['Tap'].height * 0.5);
+		else if (type == 2) ctxos.drawImage(res['Drag'], -res['Drag'].width * 0.5, -res['Drag'].height * 0.5);
+		else if (type == 4) ctxos.drawImage(res['Flick'], -res['Flick'].width * 0.5, -res['Flick'].height * 0.5);
+	}
+}
+//test
+function chart123(chart) {
+	const newChart = JSON.parse(JSON.stringify(chart)); //深拷贝
+	switch (newChart.formatVersion) { //加花括号以避免beautify缩进bug
+		case 1: {
+			newChart.formatVersion = 3;
+			for (const i of newChart.judgeLineList) {
+				for (const j of i.judgeLineDisappearEvents) {
+					j.start2 = 0;
+					j.end2 = 0;
+				}
+				for (const j of i.judgeLineMoveEvents) {
+					j.start2 = j.start % 1e3 / 520;
+					j.end2 = j.end % 1e3 / 520;
+					j.start = parseInt(j.start / 1e3) / 880;
+					j.end = parseInt(j.end / 1e3) / 880;
+				}
+				for (const j of i.judgeLineRotateEvents) {
+					j.start2 = 0;
+					j.end2 = 0;
+				}
+			}
+		}
+		case 3: {
+			for (const i of newChart.judgeLineList) {
+				let y = 0;
+				for (const j of i.speedEvents) {
+					if (j.startTime < 0) j.startTime = 0;
+					j.floorPosition = y;
+					y = Math.fround(y + (j.endTime - j.startTime) * j.value / i.bpm * 1.875); //float32
+				}
+			}
+		}
+		case 3473:
+			break;
+		default:
+			throw `Unsupported formatVersion: ${newChart.formatVersion}`;
+	}
+	return newChart;
+}
+//调节画面尺寸和全屏相关(返回source播放aegleseeker会出现迷之error)
+function adjustSize(source, dest, scale) {
+	const [sw, sh, dw, dh] = [source.width, source.height, dest.width, dest.height];
+	if (dw * sh > dh * sw) return [dw * (1 - scale) / 2, (dh - dw * sh / sw * scale) / 2, dw * scale, dw * sh / sw * scale];
+	return [(dw - dh * sw / sh * scale) / 2, dh * (1 - scale) / 2, dh * sw / sh * scale, dh * scale];
+}
+//给图片上色(limit用于解决iOS的InvalidStateError)
+function imgShader(img, color, limit = 512) {
+	const canvas = document.createElement('canvas');
+	canvas.width = img.width;
+	canvas.height = img.height;
+	const ctx = canvas.getContext('2d', { willReadFrequently: true }); //warning
+	ctx.drawImage(img, 0, 0);
+	for (let dx = 0; dx < img.width; dx += limit) {
+		for (let dy = 0; dy < img.height; dy += limit) {
+			const imgData = ctx.getImageData(dx, dy, limit, limit);
+			const data = hex2rgba(color);
+			for (let i = 0; i < imgData.data.length / 4; i++) {
+				imgData.data[i * 4] *= data[0] / 255;
+				imgData.data[i * 4 + 1] *= data[1] / 255;
+				imgData.data[i * 4 + 2] *= data[2] / 255;
+				imgData.data[i * 4 + 3] *= data[3] / 255;
+			}
+			ctx.putImageData(imgData, dx, dy);
+		}
+	}
+	return canvas;
+}
+//十六进制color转rgba数组
+function hex2rgba(color) {
+	const ctx = document.createElement('canvas').getContext('2d');
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, 1, 1);
+	return ctx.getImageData(0, 0, 1, 1).data;
+}
+//rgba数组(0-1)转十六进制
+function rgba2hex(...rgba) {
+	return '#' + rgba.map(i => ('00' + Math.round(Number(i) * 255 || 0).toString(16)).slice(-2)).join('');
+}
