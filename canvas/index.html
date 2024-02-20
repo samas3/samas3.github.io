@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <canvas id="canvas" width="960" height="540" onmousedown="pos(event)"></canvas>
+    <script src="stackblur-canvas.js"></script>
+    <!-- <select id="rank">
+            <option value="rank/AP.png">AP</option>
+            <option value="rank/FC.png">FC</option>
+            <option value="rank/V.png">V</option>
+            <option value="rank/S.png">S</option>
+            <option value="rank/A.png">A</option>
+            <option value="rank/B.png">B</option>
+            <option value="rank/C.png">C</option>
+            <option value="rank/F.png">F</option>
+        </select> -->
+    <script type="text/javascript">
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var bg = new Image();
+        bg.src = 'bg.png'
+        var illustration = new Image();
+        illustration.src = '1.png';
+        drawBg(illustration, 0, 0);
+        ctx.drawImage(bg, ...adjustSize(bg, canvas, 1));
+        bg.onload = function(){
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(170, 140);
+            ctx.lineTo(550, 140);
+            ctx.lineTo(470, 405);
+            ctx.lineTo(90, 405);
+            ctx.clip();
+            var a = adjustSize(illustration, canvas, 0.5);
+            ctx.drawImage(illustration, 50, 135, a[2], a[3]);
+        }
+        const lineScale = 57.6;
+        //rank
+        var rank = new Image();
+        var r = 'rank/V.png';
+        rank.src = r;
+        ctx.drawImage(rank, 750, 160, 80, 80);
+        //曲名+等级
+        var song = 'Future Mind';
+        ctx.font = `${lineScale * 0.4}px 思源黑体 CN Regular`;
+        ctx.fillText(song, 150, 460);
+        function drawBg(img, x, y) {
+            // 非常重要的代码 ↓
+            const canvas1 = document.createElement('canvas');
+            const w = canvas1.width = img.width;
+            const h = canvas1.height = img.height;
+            const ctx1 = canvas1.getContext('2d');
+            // 非常重要的代码 ↑
+            ctx.drawImage(img, ...adjustSize(img, canvas, 1.1));
+            StackBlur.canvasRGBA(canvas, 0, 0, w, h, Math.ceil(Math.min(w, h) * 0.0125));
+        }
+        function adjustSize(source, dest, scale) {
+            const sw = source.width;
+            const sh = source.height;
+            const dw = dest.width;
+            const dh = dest.height;
+            if (dw * sh > dh * sw) return [dw * (1 - scale) / 2, (dh - dw * sh / sw * scale) / 2, dw * scale, dw * sh / sw * scale];
+            return [(dw - dh * sw / sh * scale) / 2, dh * (1 - scale) / 2, dh * sw / sh * scale, dh * scale];
+        }
+        function pos(event) {
+            alert(event.clientX + ' ' + event.clientY);
+        }
+    </script>
+</body>
+
+</html>

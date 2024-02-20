@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Phigros谱面相关计算</title>
+        <link rel="stylesheet" href="../font.css">
+        <style>
+            td {
+                font-family: Mina;
+            }
+            input {
+                font-family: Noto Sans SC;
+            }
+            div {
+                display: inline-block;
+            }
+            table {
+                border-collapse: collapse;
+            }
+            .highlight {
+                border: 1px solid #000000;
+            }
+            .result {
+                text-align: center;
+            }
+        </style>
+        <script src="../common.js"></script>
+    </head>
+    <body>
+        <div style="text-align: left; margin-left: 50px; float: left;">
+            <table>
+                <tbody>
+                    <tr><td>Perfect数量:</td><td><input id="perfect" type="number"></td></tr>
+                    <tr><td>Good数量:</td><td><input id="good" type="number"></td></tr>
+                    <tr><td>最大连击数:</td><td><input id="combo" type="number"></td></tr>
+                    <tr><td>物量:</td><td><input id="notes" type="number"></td></tr>
+                    <tr><td>定数:</td><td><input id="level" type="number"></td></tr>
+                    <tr><td colspan="2"><input id="submit" type="button" value="计算"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-right: 50px; float: right;">
+            <table>
+                <tbody>
+                    <tr><td class="highlight"><p id="rank" class="result" style="font-size: 30px; width: 100px;">F</p></td><td class="highlight"><p id="score" class="result">0000000</p></td></tr>
+                    <tr><td></td><td class="highlight"><p id="acc" class="result">Accuracy: 0.00%</p></td></tr>
+                    <tr><td colspan="2" class="highlight"><p id="rks" class="result">本曲rks: 0.000</p></td></tr>
+                    <tr><td colspan="2" class="highlight"><p id="data" class="result">获得 0.00 KB Data</p></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
