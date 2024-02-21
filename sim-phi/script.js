@@ -3,7 +3,7 @@ import { audio } from '/utils/aup.js';
 import { full, Timer, getConstructorName, urls, isUndefined, loadJS, frameTimer, time2Str, orientation, FrameAnimater } from './js/common.js';
 import { uploader, ZipReader, readFile } from './js/reader.js';
 import { InteractProxy } from '/utils/interact.js';
-self['_i'] = ['Phi\x67ros模拟器·改', [1, 0, 1], 1611795955, 0];
+self['_i'] = ['Phi\x67ros模拟器·改', [1, 1, 0], 1611795955, 0];
 /** @type {(arg0:string)=>any} */
 const $id = query => document.getElementById(query);
 /** @type {(arg0:string)=>any} */
@@ -27,6 +27,7 @@ main.modify = a => a;
 main.pressTime = 0;
 /** @type {Map<string,()=>any>} */
 main.before = new Map();
+main.end = new Map();
 /** @type {Map<string,(...arg0:any[])=>any>} */
 main.now = new Map();
 /** @type {Map<string,()=>any>} */
@@ -2341,6 +2342,7 @@ main.fireModal = function(navHTML, contentHTML) {
 		container.classList.add('fade');
 		container.addEventListener('transitionend', () => container.remove());
 	});
+	return content;
 }
 main.toast = msg => main.fireModal('<p>提示</p>', `<p style="white-space:pre;text-align:left;display:inline-block;">${msg}</p>`);
 main.define = (a) => { return a };
@@ -2369,6 +2371,8 @@ main.use('./extends/filter.js');
 main.use('./extends/skin.js');
 main.use('./extends/export.js');
 main.use('./extends/gauge.js');
+main.use('./extends/dynamic-score.js');
+main.use('./extends/video-recorder.js');
 //debug
 export const hook = self['hook'] = main;
 main.stat = stat;

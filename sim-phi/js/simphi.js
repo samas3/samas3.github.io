@@ -624,7 +624,6 @@ class Renderer {
 			for (const i of line.notesAbove) {
 				i.cosr = line.cosr;
 				i.sinr = line.sinr;
-				console.log(this.scaleX, this.scaleY)
 				setAlpha(i, this.scaleX * i.positionX, this.scaleY * getY(i));
 			}
 			for (const i of line.notesBelow) {

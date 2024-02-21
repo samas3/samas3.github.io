@@ -4,7 +4,7 @@ export default function() {
 	(function() {
 		const t = new Date();
 		//if (1 !== t.getDate() || 3 !== t.getMonth()) return;
-		if(!($id('aprilfools').checked)) return;
+		//if(!($id('aprilfools').checked)) return;
 		import('./reverseChart.js');
 	})();
 	hook.before.set('flag{qwq}', function() {
