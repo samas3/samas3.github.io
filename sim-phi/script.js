@@ -184,7 +184,7 @@ async function checkSupport() {
 		return msgHandler.sendError(errmsg1, errmsg3, true);
 	};
 	await Utils.addFont('Titillium Web', { alt: 'Custom' });
-	await Utils.addFont('sybr', { alt: 'sybr' });
+	await Utils.addFont('Saira', { alt: 'Saira' });
 	//兼容性检测
 	msgHandler.sendMessage('检查浏览器兼容性...');
 	const isMobile = navigator['standalone'] !== undefined || navigator.platform.indexOf('Linux') > -1 && navigator.maxTouchPoints === 5;
@@ -2025,7 +2025,7 @@ const enableFR = new Checkbox('使用单精度浮点运算').appendBefore(resetC
 enableFR.checkbox.addEventListener('change', ( /** @type {Event&{target:HTMLInputElement}} */ evt) => app.enableFR = evt.target.checked);
 enableFR.checkbox.dispatchEvent(new Event('change'));
 
-const randomplay = new Checkbox('RandomPlay(未完成)').appendTo($id('view-cfg')).hook(status.reg.bind(status, 'randomplay'));
+const randomplay = new Checkbox('RandomPlay(未完成)').hook(status.reg.bind(status, 'randomplay')); //.appendTo($id('view-cfg'))
 const earlyplay = new Checkbox('EarlyPlay').appendTo($id('view-cfg')).hook(status.reg.bind(status, 'earlyplay'));
 const qwqmode = new Checkbox('理论模式').appendTo($id('view-cfg')).hook(status.reg.bind(status, 'qwqmode'));
 const yanpan = new Checkbox('大小P模式').appendTo($id('view-cfg')).hook(status.reg.bind(status, 'yanpan'));
@@ -2061,7 +2061,7 @@ $id('record').addEventListener('click', () => {
 	typeStr = strs[cnt % 2];
 	//copyrightStr = strs[cnt % 2 + 2];
 });
-const fonts = new Choice('画布字体', ['思源黑体 CN Regular(Phigros默认字体)', 'Mina(Phigros 1.x字体)', 'Titillium Web(lchzh现使用字体)'], ['sybr', 'Mina', 'Custom']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'usedFont'));
+const fonts = new Choice('画布字体', ['Saira(Phigros默认字体)', 'Mina(Phigros 1.x字体)', 'Titillium Web(lchzh现使用字体)'], ['Saira', 'Mina', 'Custom']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'usedFont'));
 //const ui = new Choice('结算界面', ['1.x', '2.x'], ['1', '2']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'uiType'));
 const mode = new Choice('分数显示', ['正常', '扣分模式', '拉格兰'], ['normal', 'minus', 'lagrange']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
 mode.select.addEventListener('change', () => {
