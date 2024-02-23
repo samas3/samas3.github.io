@@ -2062,6 +2062,9 @@ $id('record').addEventListener('click', () => {
 	//copyrightStr = strs[cnt % 2 + 2];
 });
 const fonts = new Choice('画布字体', ['Saira(Phigros默认字体)', 'Mina(Phigros 1.x字体)', 'Titillium Web(lchzh现使用字体)'], ['Saira', 'Mina', 'Custom']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'usedFont'));
+fonts.select.addEventListener('change', () => {
+	stat.setConfig('fonts', fonts.choice);
+});
 //const ui = new Choice('结算界面', ['1.x', '2.x'], ['1', '2']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'uiType'));
 const mode = new Choice('分数显示', ['正常', '扣分模式', '拉格兰'], ['normal', 'minus', 'lagrange']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
 mode.select.addEventListener('change', () => {
