@@ -130,7 +130,6 @@ const Utils = {
 			switch (from) {
 				case 'Google': {
 					const u0 = `/style/${f4}.css`;
-					console.log('google', u0)
 					// const u0 = `//fonts.googleapis.com/css?family=${f3}:${w1}${s1 === 'italic' ? 'i' : ''}`;
 					// const u1 = `//fonts.googleapis.com/css2?family=${f3}&display=swap`;
 					const text = await fetch(u0).then(a => a.text(), _ => '');
