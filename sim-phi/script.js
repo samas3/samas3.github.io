@@ -67,53 +67,56 @@ const msgHandler = {
 	nodeText: $id('msg-out'),
 	nodeView: $id('view-msg'),
 	lastMessage: '',
-	msgbox(msg, type, fatal) {
-		const msgbox = document.createElement('div');
-		msgbox.innerHTML = msg;
-		msgbox.setAttribute('type', type);
-		msgbox.classList.add('msgbox');
-		const btn = document.createElement('a');
-		btn.innerText = '忽略';
-		btn.style.float = 'right';
-		btn.onclick = () => {
-			msgbox.remove();
-			this.sendMessage(this.lastMessage);
-		};
-		if (fatal) btn.classList.add('disabled');
-		msgbox.appendChild(btn);
-		this.nodeView.appendChild(msgbox);
+	addBox(type = 'warn'){
+	  const msgbox = document.createElement('div');
+	  msgbox.setAttribute('type', type);
+	  msgbox.classList.add('msgbox');
+	  return this.nodeView.appendChild(msgbox);
 	},
-	sendMessage(msg, type) {
-		const num = this.nodeView.querySelectorAll('.msgbox[type=warn]').length;
-		if (type === 'error') {
-			this.nodeText.className = 'error';
-			this.nodeText.innerText = msg;
-		} else {
-			this.nodeText.className = num ? 'warning' : 'accept';
-			this.nodeText.innerText = msg + (num ? `（发现${num}个问题，点击查看）` : '');
-			this.lastMessage = msg;
-		}
+	removeNodeBox(nodeBox){
+	  nodeBox.remove();
+	  this.updateText(this.lastMessage);
 	},
-	sendWarning(msg, isHTML) {
-		const msgText = isHTML ? msg : Utils.escapeHTML(msg);
-		this.msgbox(msgText, 'warn');
-		this.sendMessage(this.lastMessage);
+	msgbox(msg = '', type = '', fatal = false){
+	  const msgbox = this.addBox(type);
+	  msgbox.innerHTML = msg;
+	  const btn = document.createElement('a');
+	  btn.innerText = '忽略';
+	  btn.style.float = 'right';
+	  btn.onclick = () => this.removeNodeBox(msgbox);
+	  btn.classList.toggle('disabled', fatal);
+	  msgbox.appendChild(btn);
 	},
-	sendError(msg, html, fatal) {
-		if (html) {
-			const exp = /([A-Za-z][A-Za-z+-.]{2,}:\/\/|www\.)[^\s\x00-\x20\x7f-\x9f"]{2,}[^\s\x00-\x20\x7f-\x9f"!'),.:;?\]}]/g;
-			const ahtml = html.replace(exp, (match = '') => {
-				const url = match.startsWith('www.') ? `//${match}` : match;
-				const rpath = match.replace(`${location.origin}/`, '');
-				if (match.indexOf(location.origin) > -1) return `<a href="#"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
-				return `<a href="${url}"target="_blank"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
-			});
-			this.msgbox(ahtml, 'error', fatal);
-		}
-		this.sendMessage(msg, 'error');
-		return false;
+	updateText(msg = '', type = ''){
+	  const num = this.nodeView.querySelectorAll('.msgbox[type=warn]').length;
+	  if (type === 'error') {
+		this.nodeText.className = 'error';
+		this.nodeText.innerText = msg;
+	  } else {
+		this.nodeText.className = num ? 'warning' : 'accept';
+		this.nodeText.innerText = msg + (num ? `（发现${num}个问题，点击查看）` : '');
+		this.lastMessage = msg;
+	  }
+	},
+	sendWarning(msg, isHTML = false){
+	  this.msgbox(isHTML ? msg : Utils.escapeHTML(msg), 'warn');
+	  this.updateText(this.lastMessage);
+	},
+	sendError(msg = '', html = '', fatal = false){
+	  if (html) {
+		const exp = /([A-Za-z][A-Za-z+-.]{2,}:\/\/|www\.)[^\s\x00-\x20\x7f-\x9f"]{2,}[^\s\x00-\x20\x7f-\x9f"!'),.:;?\]}]/g;
+		const ahtml = html.replace(exp, (match = '') => {
+		  const url = match.startsWith('www.') ? `//${match}` : match;
+		  const rpath = match.replace(`${location.origin}/`, '');
+		  if (match.includes(location.origin)) return `<a href="#"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
+		  return `<a href="${url}"target="_blank"style="color:#023b8f;text-decoration:underline;">${rpath}</a>`;
+		});
+		this.msgbox(ahtml, 'error', fatal);
+	  }
+	  this.updateText(msg, 'error');
 	}
 };
+const sendText = msgHandler.updateText.bind(msgHandler);
 const stat = new simphi.Stat();
 const app = new simphi.Renderer($id('stage')); //test
 const { canvas, ctx, canvasos, ctxos } = app;
@@ -178,7 +181,7 @@ async function checkSupport() {
 		const errmsg1 = `错误：${name}组件加载失败（点击查看详情）`;
 		const errmsg2 = `${name}组件加载失败，请检查您的网络连接然后重试：`;
 		const errmsg3 = `${name}组件加载失败，请检查浏览器兼容性`;
-		msgHandler.sendMessage(`加载${name}组件...`);
+		sendText(`加载${name}组件...`);
 		if (!await loadJS(urls).catch(e => msgHandler.sendError(errmsg1, e.message.replace(/.+/, errmsg2), true))) return false;
 		if (!check()) return true;
 		return msgHandler.sendError(errmsg1, errmsg3, true);
@@ -186,7 +189,7 @@ async function checkSupport() {
 	await Utils.addFont('Titillium Web', { alt: 'Custom' });
 	await Utils.addFont('Saira', { alt: 'Saira' });
 	//兼容性检测
-	msgHandler.sendMessage('检查浏览器兼容性...');
+	sendText('检查浏览器兼容性...');
 	const isMobile = navigator['standalone'] !== undefined || navigator.platform.indexOf('Linux') > -1 && navigator.maxTouchPoints === 5;
 	if (isMobile) $id('uploader-select').style.display = 'none';
 	if (navigator.userAgent.indexOf('MiuiBrowser') > -1) {
@@ -200,7 +203,7 @@ async function checkSupport() {
 	if (!await loadLib('md5', urls.md5, () => isUndefined('md5'))) return -3;
 	if(!await loadLib('文件系统', urls.fs, () => isUndefined('saveAs'))) return -999;
 	if(!await loadLib('画布', urls.fabric, () => isUndefined('fabric'))) return -998;
-	msgHandler.sendMessage('加载声音组件...');
+	sendText('加载声音组件...');
 	const oggCompatible = !!(new Audio).canPlayType('audio/ogg');
 	if (!await loadLib('ogg格式兼容', urls.ogg, () => !oggCompatible && isUndefined('oggmented'))) return -4;
 	audio.init(oggCompatible ? self.AudioContext || self['webkitAudioContext'] : self['oggmented'].OggmentedAudioContext); //兼容Safari
@@ -288,7 +291,7 @@ self.addEventListener('resize', () => stage.resize());
 		await promise.catch(err => msgHandler.sendWarning(`不支持的文件：${err.cause.name}`));
 		dones[tag] = (dones[tag] || 0) + 1;
 		uploader_done = Object.values(dones).reduce((a, b) => a + b, 0);
-		msgHandler.sendMessage(`读取文件：${uploader_done}/${uploader_total}`);
+		sendText(`读取文件：${uploader_done}/${uploader_total}`);
 		if (dones[tag] === totals[tag]) oncomplete();
 		loadComplete();
 	}
@@ -296,7 +299,7 @@ self.addEventListener('resize', () => stage.resize());
 	let file_total = 0;
 	const options = { createAudioBuffer() { return audio.decode(...arguments) } };
 	const zip = new ZipReader({ handler: data => readFile(data, options) });
-	zip.addEventListener('loadstart', () => msgHandler.sendMessage('加载zip组件...'));
+	zip.addEventListener('loadstart', () => sendText('加载zip组件...'));
 	zip.addEventListener('read', ( /** @type {CustomEvent<ReaderData>} */ evt) => handleFile('zip', zip.total, pick(evt.detail)));
 	$id('uploader-upload').addEventListener('click', uploader.uploadFile);
 	$id('uploader-file').addEventListener('click', uploader.uploadFile);
@@ -307,7 +310,7 @@ self.addEventListener('resize', () => stage.resize());
 	uploader.addEventListener('progress', function( /** @type {ProgressEvent} */ evt) { //显示加载文件进度
 		if (!evt.total) return;
 		const percent = Math.floor(evt.loaded / evt.total * 100);
-		msgHandler.sendMessage(`加载文件：${percent}% (${bytefm(evt.loaded)}/${bytefm(evt.total)})`);
+		sendText(`加载文件：${percent}% (${bytefm(evt.loaded)}/${bytefm(evt.total)})`);
 	});
 	uploader.addEventListener('load', /** @param {(ProgressEvent<FileReader>&{file:File,buffer:ArrayBuffer})} evt*/ function(evt) {
 		console.log(evt);
@@ -939,7 +942,7 @@ window.addEventListener('load', async function() {
 	const pth = atob('aHR0cHM6Ly9sY2h6aDM0NzMuZ2l0aHViLmlvL2Fzc2V0cy8=');
 	//const erc = str => str.includes('.') ? str : pth + str;
 	const erc = str => str;
-	msgHandler.sendMessage('初始化...');
+	sendText('初始化...');
 	if (await checkSupport()) return;
 	/*const res0 = {};
 	const raw = await fetch(atob('aHR0cHM6Ly9sY2h6aC5uZXQvZGF0YS9wYWNrLmpzb24=')).then(i => i.json());
@@ -1008,7 +1011,7 @@ window.addEventListener('load', async function() {
 				else if (header1 === 0x89504e47 && header2 === 0x0d0a1a0a) res[name] = await createImageBitmap(new Blob([xhr.response]));
 				else msgHandler.sendError(`错误：${++errorNum}个资源加载失败（点击查看详情）`, `资源加载失败，请检查您的网络连接然后重试：\n${new URL(src,location)}`, true);
 			}
-			msgHandler.sendMessage(`加载资源：${Math.floor(++loadedNum / arr.length * 100)}%`);
+			sendText(`加载资源：${Math.floor(++loadedNum / arr.length * 100)}%`);
 			resolve();
 		};
 	})));
@@ -1033,7 +1036,7 @@ window.addEventListener('load', async function() {
 			b.drawImage(res['JudgeLine'], 0, 0);
 			return b.getImageData(0, 0, 1, 1).data[0];
 		})()) return msgHandler.sendError('检测到图片加载异常，请关闭所有应用程序然后重试');
-	msgHandler.sendMessage('等待上传文件...');
+	sendText('等待上传文件...');
 	$id('uploader').classList.remove('disabled');
 	$id('select').classList.remove('disabled');
 	emitter.dispatchEvent(new CustomEvent('change'));
