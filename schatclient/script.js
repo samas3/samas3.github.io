@@ -201,6 +201,8 @@ function handleCommand(){
             "parameters": command.slice(1).map(x => parseValue(x))
         };
         ws.send(JSON.stringify(req));
+    }else if(command.startsWith('/')){
+        ws.send("/send " + command);
     }else{
         ws.send(command);
     }

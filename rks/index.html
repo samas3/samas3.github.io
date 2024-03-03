@@ -33,23 +33,25 @@
     <script>!function (p) { "use strict"; !function (t) { var s = window, e = document, i = p, c = "".concat("https:" === e.location.protocol ? "https://" : "http://", "sdk.51.la/js-sdk-pro.min.js"), n = e.createElement("script"), r = e.getElementsByTagName("script")[0]; n.type = "text/javascript", n.setAttribute("charset", "UTF-8"), n.async = !0, n.src = c, n.id = "LA_COLLECT", i.d = n; var o = function () { s.LA.ids.push(i) }; s.LA ? s.LA.ids && o() : (s.LA = p, s.LA.ids = [], o()), r.parentNode.insertBefore(n, r) }() }({ id: "Jj67QM9XKxdyBUKP", ck: "Jj67QM9XKxdyBUKP" });</script>
     <script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8369333813205733"
         crossorigin="anonymous"></script> -->
-    <script defer="defer" src="main.e96a94.js"></script>
+    <script defer="defer" src="main.js"></script>
+    <script src="pyodide.js"></script>
     <link href="main.css" rel="stylesheet">
 </head>
 
 <body><noscript><strong style="color:#f00">此浏览器不支持JavaScript，该脚本无法运行。</strong></noscript>
     <div class="index">
         <div class="main" style="display: block;">
-            <h1 class="title">rks查询工具&nbsp;<small>v1.3.4</small></h1>
+            <h1 class="title"></h1>
             <p class="info">作者：<a style="text-decoration:underline" target="_blank"
                     href="https://space.bilibili.com/274753872">lchzh3473</a>&nbsp;(2022年6月19日制作)
             </p>
             <p class="profile">上传Phigros存档文件(com.PigeonGames.Phigros.v2.playerprefs.xml)<br>或包含Phigros存档文件的ab(Android
-                Backup)文件，rks信息将在下方显示。<br>(曲目定数信息已更新至Phigros v3.4.3，暂不支持加密ab)</p>
+                Backup)文件，rks信息将在下方显示。<br>(曲目定数信息已更新至Phigros v3.5.0，暂不支持加密ab)</p>
             <input id="b19" type="checkbox"><label for="b19">只显示b19</label>
             <div id="uploads" class="upload"><input type="button" id="demo" value="Demo" style="display:none"> <input
                     type="file" id="upload"> <label for="upload">上传文件</label> <input type="button" value="重置"
                     onclick="location.reload(true)"></div>
+            <div id="online"><input id="token" placeholder="Session ID"><input type="button" value="通过token获取" onclick="getByToken()"></div>
             <div id="config" style="display:none"><input type="button" id="colp" value="增加列"> <input type="button"
                     id="colm" value="减少列"></div>
             <div id="container"></div>
