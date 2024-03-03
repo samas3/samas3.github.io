@@ -164,7 +164,8 @@ const Utils = {
 		}
 	};
 	Utils.addFont = (...args) => fontLoader.load(...args).then(i => i.forEach(a => document.fonts.add(a)));
-	Utils.addFont('Noto Sans SC').catch(_ => '');
+	//Utils.addFont('Noto Sans SC').catch(_ => '');
+	//Utils.addFont('Material Icons').catch(_ => '');
 })();
 //fuck safe
 {
