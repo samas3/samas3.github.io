@@ -347,5 +347,7 @@ def song_info_handler_main(songid: str):
     
 BestsRender.read_difficulty('difficulty.csv')
 BestsRender.read_playerInfo('info.csv')
-print(BestsRender.get_summary('radt93iuj8cpzz6r3u21a4od8'))
-print(BestsRender.get_bests('radt93iuj8cpzz6r3u21a4od8', 0))
+def summary(token):
+    return BestsRender.get_summary(token)
+def b19(token):
+    return BestsRender.get_bests(token, 0)

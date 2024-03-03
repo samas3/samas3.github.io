@@ -1,4 +1,6 @@
 /*! For license information please see main.e96a94.js.LICENSE.txt */
+// 列数
+let r = 0 | Math.sqrt(innerWidth / innerHeight * 20);
 // 解密
 (()=>{
     var e = {
@@ -1642,7 +1644,6 @@
         
         // 版本
         self._i = ["rks查询工具·改", [1, 1, 0], 1655595109, 0];
-        let r = 0 | Math.sqrt(innerWidth / innerHeight * 20);
         function o(e) {
             const n = (new DOMParser).parseFromString(e, "text/xml").querySelectorAll("map>string");
             if (!n.length)
@@ -1813,22 +1814,19 @@
                 ,
                 n.readAsArrayBuffer(t)
             }(t)
-        }
-        )),
+        }))
         document.getElementById("colp").addEventListener("click", (()=>{
             r++;
             for (const e of document.querySelectorAll("svg"))
                 e.style.cssText += `;width:calc(${100 / r}% - 6px);`
-        }
-        )),
+        })),
         document.getElementById("colm").addEventListener("click", (()=>{
             if (r > 1) {
                 r--;
                 for (const e of document.querySelectorAll("svg"))
                     e.style.cssText += `;width:calc(${100 / r}% - 6px);`
             }
-        }
-        ))
+        }))
     }
     )()
 }
@@ -1842,6 +1840,78 @@ function getByToken(){
         let zipResponse = await fetch("taptap/file.zip");
         let zipBinary = await zipResponse.arrayBuffer();
         pyodide.unpackArchive(zipBinary, "zip");
+        let response = await fetch("taptap/code.zip"); // .zip, .whl, ...
+        let buffer = await response.arrayBuffer();
+        await pyodide.unpackArchive(buffer, "zip"); // by default, unpacks to the current dir
+        pyodide.pyimport("method");
+        var out = await pyodide.runPythonAsync(`
+            import method
+            token = '${token}'
+            [method.summary(token), method.b19(token)]
+        `);
+        out = out.toJs();
+        var summary = out[0], b19 = out[1];
+        console.log(summary, b19)
+        var o = b19[0];
+        var a = o.slice(0, 20).reduce(((e,t)=>e + 5 * t.get('rks')), 0)
+        , s = ((a + .5 | 0) - a + .5) / 5
+        , l = o[0].get('rks')
+        , c = o[19].get('rks') + s,
+        d = document.createElement('span');
+        var n = document.createElement("canvas").getContext("2d")
+        const i = e=>n.measureText(e).width;
+        d.innerHTML = `RankingScore: ${summary.get('rks').toFixed(4)}`;
+        d.classList.add("bi");
+        document.getElementById("container").append(d, document.createElement("br"));
+        var challenge = summary.get('challenge');
+        if(challenge){
+            challenge = '' + challenge;
+            const challengeColor=challenge[0],challengeLvl=challenge.substring(1);
+            var ch;
+            switch(challengeColor){
+                case "5":
+                    ch=`<span title class="rainbow">${challengeLvl}</span>`;
+                    break;
+                case "4":
+                    ch=`<span class="gold">${challengeLvl}</span>`;
+                    break;
+                case "3":
+                    ch=`<span class="orange">${challengeLvl}</span>`;
+                    break;
+                case "2":
+                    ch=`<span class="blue">${challengeLvl}</span>`;
+                    break;
+                case "1":
+                    ch=`<span class="green">${challengeLvl}</span>`;
+                    break;
+            }
+            d.innerHTML+=`\nChallengeModeRank: ${ch}`;
+            d.innerHTML += `\nUpdate Time: ${summary.get('updateAt').replace('T', ' ').replace('Z', ' ')}`;
+            d.innerHTML += `\nAvatar: ${summary.get('avatar')}`;
+            d.innerHTML+='\n背景颜色说明: <span class="sb">继续推分</span> <span class="sg">需要收歌才能涨rks</span> <span class="sr">怎么推都没用</span>'
+            o.forEach((e,t)=>{
+                if(t == 0 && !b19[1]);
+                else{
+                    const n = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    n.classList.add("svg"),
+                    n.style.cssText += `;width:calc(${100 / r}% - 6px);`,
+                    n.setAttribute("viewBox", "0 0 512 240");
+                    const o = ((t < 19 ? e.get('rks') + s : c) / e.get('difficulty')) ** .5 * 45 + 55
+                    , a = o < 70 ? 70 : o < 100 ? o : l < e.get('difficulty') ? 100 : o;
+                    n.classList.add(a < 100 ? "sb" : l < e.get('difficulty') ? "sg" : "sr");
+                    const d = e.get('songname'), f = `#${t || "φ"}`;
+                    if (d)
+                        n.innerHTML = `<g fill="#000"stroke="none"dosairant-baseline="middle"text-anchor="start"class="tg"><text x="32"y="64"${i(d) > 384 ? 'textlength="384"' : ""}lengthAdjust="spacingAndGlyphs"class="snb">${d}</text><text x="480"y="64"${i(f) > 64 ? 'textlength="64"' : ""}lengthAdjust="spacingAndGlyphs"class="rk">${f}</text><text x="32"y="112">${e.get('level')} ${e.get('difficulty').toFixed(1)}(rks: ${e.get('rks').toFixed(4)})</text><text x="480"y="112"text-anchor="end">acc: ${e.get('acc').toFixed(4)}%</text>` + (a <= 100 ? `<text x="32"y="228"fill="#aaa">推分最小acc: ${a.toFixed(4)}%</text>` : "") + `<text x="32"y="184"lengthAdjust="spacingAndGlyphs"textlength="336"font-size="80">${("0000000" + e.get('score')).slice(-7)}</text>` + ((e,c)=>e >= 1e6 ? '<text x="440"y="174"class="rc r0">φ</text>' : c == 1 ? '<text x="440"y="184"class="rc r1">V</text>' : e >= 96e4 ? '<text x="440"y="184"class="rc v">V</text>' : e >= 92e4 ? '<text x="440"y="184"class="rc r2">S</text>' : e >= 88e4 ? '<text x="440"y="184"class="rc r3">A</text>' : e >= 82e4 ? '<text x="440"y="184"class="rc r4">B</text>' : e >= 7e5 ? '<text x="440"y="184"class="rc r5">C</text>' : '<text x="440"y="184"class="rc r6">F</text>')(e.get('score'), e.get('fc')) + "</g>";
+                    else {
+                        if (0 != t)
+                            return;
+                        n.innerHTML = `<g fill="#000"stroke="none"dosairant-baseline="middle"text-anchor="start"class="tg"><text x="32"y="64"${i(d) > 384 ? 'textlength="384"' : ""}lengthAdjust="spacingAndGlyphs"class="snr">无满分记录</text><text x="480"y="64"${i(f) > 64 ? 'textlength="64"' : ""}lengthAdjust="spacingAndGlyphs"class="rk">${f}</text><text x="32"y="112">${e.get('level')} ${e.get('difficulty').toFixed(1)}(rks: ${e.get('rks').toFixed(4)})</text><text x="480"y="112"text-anchor="end">acc: ${e.get('acc').toFixed(4)}%</text></g>`
+                    }
+                    document.getElementById("container").appendChild(n)
+                }
+            });
+            document.getElementById("config").style.display = ""
+        }
     }
     main();
 }
