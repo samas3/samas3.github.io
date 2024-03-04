@@ -1890,16 +1890,18 @@ function getByToken(){
             d.innerHTML += `\nAvatar: ${summary.get('avatar')}`;
             d.innerHTML+='\n背景颜色说明: <span class="sb">继续推分</span> <span class="sg">需要收歌才能涨rks</span> <span class="sr">怎么推都没用</span>'
             o.forEach((e,t)=>{
-                if(t == 0 && !b19[1]);
-                else{
+                var idx = t;
+                if(t == 0 && !b19[1]){
+                    idx++;
+                }else{
                     const n = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                     n.classList.add("svg"),
                     n.style.cssText += `;width:calc(${100 / r}% - 6px);`,
                     n.setAttribute("viewBox", "0 0 512 240");
-                    const o = ((t < 19 ? e.get('rks') + s : c) / e.get('difficulty')) ** .5 * 45 + 55
+                    const o = ((e.get('rks') + s) / e.get('difficulty')) ** .5 * 45 + 55
                     , a = o < 70 ? 70 : o < 100 ? o : l < e.get('difficulty') ? 100 : o;
                     n.classList.add(a < 100 ? "sb" : l < e.get('difficulty') ? "sg" : "sr");
-                    const d = e.get('songname'), f = `#${t || "φ"}`;
+                    const d = e.get('songname'), f = `#${idx || "φ"}`;
                     if (d)
                         n.innerHTML = `<g fill="#000"stroke="none"dosairant-baseline="middle"text-anchor="start"class="tg"><text x="32"y="64"${i(d) > 384 ? 'textlength="384"' : ""}lengthAdjust="spacingAndGlyphs"class="snb">${d}</text><text x="480"y="64"${i(f) > 64 ? 'textlength="64"' : ""}lengthAdjust="spacingAndGlyphs"class="rk">${f}</text><text x="32"y="112">${e.get('level')} ${e.get('difficulty').toFixed(1)}(rks: ${e.get('rks').toFixed(4)})</text><text x="480"y="112"text-anchor="end">acc: ${e.get('acc').toFixed(4)}%</text>` + (a <= 100 ? `<text x="32"y="228"fill="#aaa">推分最小acc: ${a.toFixed(4)}%</text>` : "") + `<text x="32"y="184"lengthAdjust="spacingAndGlyphs"textlength="336"font-size="80">${("0000000" + e.get('score')).slice(-7)}</text>` + ((e,c)=>e >= 1e6 ? '<text x="440"y="174"class="rc r0">φ</text>' : c == 1 ? '<text x="440"y="184"class="rc r1">V</text>' : e >= 96e4 ? '<text x="440"y="184"class="rc v">V</text>' : e >= 92e4 ? '<text x="440"y="184"class="rc r2">S</text>' : e >= 88e4 ? '<text x="440"y="184"class="rc r3">A</text>' : e >= 82e4 ? '<text x="440"y="184"class="rc r4">B</text>' : e >= 7e5 ? '<text x="440"y="184"class="rc r5">C</text>' : '<text x="440"y="184"class="rc r6">F</text>')(e.get('score'), e.get('fc')) + "</g>";
                     else {
