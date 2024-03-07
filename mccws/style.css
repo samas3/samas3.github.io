@@ -44,9 +44,6 @@ body {
     font-size: 15px;
     outline: none;
 }
-.input-item:placeholder {
-    text-transform: uppercase;
-}
 .btn {
     text-align: center;
     padding: 10px;

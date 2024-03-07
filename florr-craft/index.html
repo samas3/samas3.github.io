@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="style.css" rel="stylesheet">
+        <title>Florr.io 合成概率计算</title>
+    </head>
+    <body>
+        <div id="index" class="container">
+            <div class="login-wrapper">
+                <div class="header">Florr.io 合成概率计算</div>
+                <div class="form-wrapper">
+                    <input id="cnt" placeholder="花瓣个数" class="input-item">
+                    <table>
+                        <tr>
+                            <td>花瓣种类</td>
+                            <td>
+                                <select id="type" class="input-item">
+                                    <option value="0">Common</option>
+                                    <option value="1">Unusual</option>
+                                    <option value="2">Rare</option>
+                                    <option value="3">Epic</option>
+                                    <option value="4">Legendary</option>
+                                    <option value="5">Mythic</option>
+                                    <option value="6">Ultra</option>
+                                    <option value="7">Super</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Talented Crafting</td>
+                            <td>
+                                <select id="boost" class="input-item">
+                                    <option value="0">无</option>
+                                    <option value="1">Legendary</option>
+                                    <option value="2">Mythic</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <input id="calc" value="计算" type="button" class="btn">
+                    <p id="rate"></p>
+                </div>
+                <div class="msg">
+                    <span>结果： </span><span id="result">等待输入</span>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
