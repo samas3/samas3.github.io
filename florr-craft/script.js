@@ -15,3 +15,9 @@ function count(k){
 function calc(k, p){
   return 1 - (1 - p) ** count(k);
 }
+$('type').onclick = $('boost').onclick = changeRate;
+function changeRate(){
+  var type = $('type').value, eboost = $('boost').value;
+  var p = rate[type] * boost[eboost];
+  $('rate').innerHTML = p;
+}
