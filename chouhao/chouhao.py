@@ -31,6 +31,10 @@ names = {}
 gnames = {}
 mode = 1
 voice = IntVar()
+def delete_cache():
+    if not os.path.exists(cache):
+        return
+    os.remove(cache)
 def probab(items, probs):
     it = list(items)
     pr = list(probs)
@@ -62,10 +66,10 @@ def decrypt_content(s):
             continue
         maxx = max(maxx, int(font.measure(k) / 10))
     return maxx
-def loadFile():
+def loadFile(force=False):
     names.clear()
     try:
-        load()
+        load(force)
     except Exception as e:
         fail()
         # raise e
@@ -119,14 +123,14 @@ def fail():
     res['fg'] = 'red'
     do['state'] = 'disabled'
     do2['state'] = 'disabled'
-def load():
+def load(force_online=False):
     global path
     fn = file
     success = True
     online = False
-    if os.path.exists(cache):
+    if os.path.exists(cache) and not force_online:
         fn = cache
-    if os.path.exists(fn):
+    if os.path.exists(fn) and not force_online:
         online = False
         if fn == cache:
             online = True
@@ -176,7 +180,24 @@ def choose_url():
     t2.protocol('WM_DELETE_WINDOW', seturl)
     t2.mainloop()
 Button(t, text='选择学号文件', command=choose_url, font=font).grid(row=4, column=0)
-Checkbutton(t, text='语音', font=font, variable=voice).grid(row=5, column=0)
+def reload():
+    t2 = Toplevel()
+    t2.wm_attributes('-topmost', 1)
+    pwd = Entry(t2, font=('', 16))
+    pwd.pack()
+    def do():
+        if test.password() == pwd.get():
+            delete_cache()
+            loadFile(True)
+            t2.destroy()
+            messagebox.showinfo('Info', 'Reload success')
+        else:
+            t2.destroy()
+            messagebox.showerror('Error', 'Wrong password')
+    t2.protocol('WM_DELETE_WINDOW', do)
+    t2.mainloop()
+Button(t, text='Reload', command=reload, font=('', 12)).grid(row=5, column=0)
+Checkbutton(t, text='语音', font=font, variable=voice).grid(row=6, column=0)
 def main():
     loadFile()
     t.mainloop()

@@ -1,5 +1,7 @@
 from itertools import cycle
 import base64
+import datetime
+import hashlib
 
 def crypt(source, key):
     result = ''
@@ -22,6 +24,13 @@ def decrypt(source, key):
     for ch in source:
         result = result + chr(ord(ch) ^ ord(next(temp)))
     return result
+def password(disp=False):
+    st = datetime.date.today().ctime()
+    code = str(int(int(hashlib.md5(st.encode()).hexdigest(), base=16) % 1e6))
+    if disp:
+        print(code)
+    else:
+        return code
 if __name__ == '__main__':
     with open('1班.txt', 'r', encoding='utf-8') as f:
         with open('4班.txt', 'w', encoding='utf-8') as g:
