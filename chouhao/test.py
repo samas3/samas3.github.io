@@ -32,6 +32,7 @@ def password(disp=False):
     else:
         return code
 if __name__ == '__main__':
+    password(1)
     with open('1班.txt', 'r', encoding='utf-8') as f:
         with open('4班.txt', 'w', encoding='utf-8') as g:
             g.write(crypt(f.read(), 'Let QwQ bless me'))
