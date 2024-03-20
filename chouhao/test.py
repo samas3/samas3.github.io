@@ -26,7 +26,7 @@ def decrypt(source, key):
     return result
 def password(disp=False):
     st = datetime.date.today().ctime()
-    code = str(int(int(hashlib.md5(st.encode()).hexdigest(), base=16) % 1e6))
+    code = str(int(int(hashlib.md5(st.encode()).hexdigest(), base=16) % 1e6)).zfill(6)
     if disp:
         print(code)
     else:
