@@ -27,7 +27,7 @@
       const fontFamily = 'MyFont'
       const colors = ['#048ABF', '#BF4215', '#F2B138', '#048ABF', '#455473']
 
-      const titleText = 'π Day Challenge - Draw a Circle Freehand';
+      const titleText = 'π Day Challenge - Modified by samas3';
       const titleFontSize = canvasSize * 0.06;
       const titleMarginTop = canvasSize * 0.05;
       const titleColor = colors[0];
@@ -107,12 +107,12 @@
           circumference += dist(points[i], points[i + 1]);
         }
         circumference += dist(points[0], points[pointTot - 1]);
-        if (dist(firstPoint, lastPoint) / circumference > 0.15) {
+        /*if (dist(firstPoint, lastPoint) / circumference > 0.15) {
           return Infinity;
         }
         if (dist(points[0], lastPoint) / circumference > 0.15) {
           return Infinity;
-        }
+        }*/
 
         for (let i = 1; i < pointTot - 1; i++) {
           let v1 = [points[i][0] - points[0][0], points[i][1] - points[0][1]];
@@ -121,9 +121,9 @@
           areaAbs += Math.abs(cross(v1, v2) / 2);
         }
         area = Math.abs(area);
-        if (area / areaAbs < 0.85) {
+        /*if (area / areaAbs < 0.85) {
           return Infinity;
-        }
+        }*/
 
         return circumference * circumference / area / 4;
       }
