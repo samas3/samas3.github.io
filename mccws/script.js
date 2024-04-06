@@ -125,11 +125,11 @@ function onclose(){
     $("terminal").style = "display: none;";
     $("input").value = "";
     $("output").value = "";
-    setStatus("Closed");
-    location.reload();
+    //setStatus("Closed");
+    setStatus("Waiting for connection");
 }
 function onerror(){
-    alert("An error occured");
+    MyUtil.createPopupBox("An error occured", "#f00");
 }
 function getUuid(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
