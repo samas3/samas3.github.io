@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="style.css" rel="stylesheet">
+        <title>Bubble 配速计算</title>
+    </head>
+    <body>
+        <div id="index" class="container">
+            <div class="login-wrapper">
+                <div class="header">Bubble 配速计算</div>
+                <div class="form-wrapper">
+                    <input id="cd" placeholder="Bubble冷却时间(x+y)" class="input-item">
+                    <input id="speed" placeholder="初始转速(r rad/s)" class="input-item">
+                    <input id="calc" value="计算" type="button" class="btn">
+                </div>
+                <div class="msg">
+                    <span>Faster所需额外速度： </span><span id="result">等待输入</span>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
