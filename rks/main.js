@@ -1833,6 +1833,7 @@ let r = 0 | Math.sqrt(innerWidth / innerHeight * 20);
 )();
 var $ = (i) => document.getElementById(i);
 function getByToken(){
+    MyUtil.createPopupBox('查询中，请耐心等待……');
     var token = $('token').value;
     async function main(){
         let pyodide = await loadPyodide();
