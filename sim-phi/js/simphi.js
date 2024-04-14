@@ -119,7 +119,7 @@ class Stat {
 		return hyperMode.checked ? (isFinite(b) ? b : 0) : (isFinite(a) ? a : 0); // 1改为0
 	}
 	get accStr() {
-		return (100 * this.accNum).toFixed(2) + '\uff05';
+		return (100 * this.accNum).toFixed(2) + '%';
 	}
 	get avgDispStr() {
 		const a = Math.trunc(this.cumDisp / this.numDisp * 1e3) || 0;
@@ -153,9 +153,9 @@ class Stat {
 	}
 	
 	get rks(){
-		if(this.accNum < 0.7) return '0.00';
+		if(this.accNum < 0.7) return '0.000';
 		var rk = Math.pow(((this.accNum - 0.55) / 0.45), 2) * this.level;
-		if(!isFinite(rk)) return '0.00';
+		if(!isFinite(rk)) return '0.000';
 		var f = Math.round(rk * 100) / 100;
 		var s = f.toString();
 		var rs = s.indexOf('.');
@@ -163,7 +163,7 @@ class Stat {
 			rs = s.length;
 			s += '.';
 		}
-		while (s.length <= rs + 2) {
+		while (s.length <= rs + 3) {
 			s += '0';
 		}
 		return s;

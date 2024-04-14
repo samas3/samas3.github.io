@@ -3,7 +3,7 @@ import { audio } from '/utils/aup.js';
 import { full, Timer, getConstructorName, urls, isUndefined, loadJS, frameTimer, time2Str, orientation, FrameAnimater } from './js/common.js';
 import { uploader, ZipReader, readFile } from './js/reader.js';
 import { InteractProxy } from '/utils/interact.js';
-self['_i'] = ['Phi\x67ros模拟器·改', [1, 2, 0], 1611795955, 0];
+self['_i'] = ['Phi\x67ros模拟器·改', [1, 3, 0], 1611795955, 0];
 /** @type {(arg0:string)=>any} */
 const $id = query => document.getElementById(query);
 /** @type {(arg0:string)=>any} */
@@ -1428,7 +1428,7 @@ function qwqdraw3(statData) {
 	ctxos.fillStyle = '#000'; //背景变暗
 	ctxos.globalAlpha = app.brightness; //背景不透明度
 	ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
-	if(1 || ui.choice == '1'){
+	if(ui.choice == '1'){
 		ctxos.globalCompositeOperation = 'destination-out';
 		ctxos.globalAlpha = 1;
 		const k = 3.7320508075688776; //tan75°
@@ -1528,69 +1528,75 @@ function qwqdraw3(statData) {
 		ctxos.fillRect(0, 0, canvasos.width, canvasos.height);
 		ctxos.globalCompositeOperation = 'source-over';
 	}else{
+		var size = adjustSize(app.bgImage, canvasos, 1);
+		function conv(x, y){
+			return [ x * (size[2] - size[0]) + size[0], y * (size[3] - size[1]) + size[1] ];
+		}
 		//背景+曲绘
-        ctxos.drawImage(res['Bg_2'], ...adjustSize(app.bgImage, canvasos, 0.96));
+        ctxos.drawImage(res['Bg_2'], ...size);
 		//illustrationCut(app.bgImage);
 		ctxos.fillStyle = '#000';
 		ctxos.textBaseline = 'middle';
 		ctxos.textAlign = 'left';
-		ctxos.font = `60px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText('不会写曲绘裁剪', 240, 350);
+		ctxos.font = `${conv(0, 0.07)[1]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText('曲绘', ...conv(0.2, 0.5));
         //rank
 		var status = stat.rankStatus;
 		const ranks = [res['AP'], res['V'], res['S'], res['A'], res['B'], res['C'], res['F'], res['FC']];
 		if(stat.bad == 0 && status != 0 && stat.all) status = 7;
-        ctxos.drawImage(ranks[status], 1100, 260, 120, 120);
+        ctxos.drawImage(ranks[status], ...conv(0.74, 0.28), ...conv(0.15, 0.22));
         //曲名+等级
-		ctxos.fillStyle = '#fff';
-		ctxos.font = `25px ${fonts.choice},Noto Sans SC`;
+		//ctxos.fillStyle = '#fff';
+		ctxos.font = `${conv(0, 0.05)[1]}px ${fonts.choice},Noto Sans SC`;
 		const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
-		if (dxsnm > 360) ctxos.font = `${25/dxsnm*360}px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText(inputName.value || inputName.placeholder, 140, 560);
+		if (dxsnm > conv(0.2, 0)[0]) ctxos.font = `${conv(0, 0.05)[1]/dxsnm*conv(0.2, 0)[0]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText(inputName.value || inputName.placeholder, ...conv(0.11, 0.72));
 		ctxos.textAlign = 'right';
-		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), 690, 560);
+		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), ...conv(0.47, 0.72));
 		//分数
+		ctxos.fillStyle = '#fff';
 		ctxos.textAlign = 'left';
-		ctxos.font = `50px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText(stat.scoreStrNum, 840, 350);
-		ctxos.font = `15px ${fonts.choice},Noto Sans SC`;
+		console.log(conv(0, 0.07)[1])
+		ctxos.font = `${conv(0, 0.07)[1]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText(stat.scoreStrNum, ...conv(0.56, 0.4));
+		ctxos.font = `${conv(0, 0.03)[1]}px ${fonts.choice},Noto Sans SC`;
 		if(app.playMode == 1){
 			ctxos.fillStyle = '#ffc500';
-			ctxos.fillText(typeStr, 850, 385);
+			ctxos.fillText(typeStr, ...conv(0.56, 0.45));
 		}else if(statData.scoreDelta > 0){
-			ctxos.fillText('NEW BEST ' + toScoreStr(statData.scoreBest - statData.scoreDelta) + ' +' + toScoreStr(statData.scoreDelta), 850, 385);
+			ctxos.fillText('NEW BEST ' + toScoreStr(statData.scoreBest - statData.scoreDelta) + ' +' + toScoreStr(statData.scoreDelta), ...conv(0.56, 0.45));
 		}
 		//MaxCombo+Acc
 		ctxos.fillStyle = '#fff';
-		ctxos.font = `27px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText(stat.maxcombo, 780, 460);
+		ctxos.font = `${conv(0, 0.04)[1]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText(stat.maxcombo, ...conv(0.53, 0.57));
 		ctxos.textAlign = 'right';
-		ctxos.fillText(stat.accStr, 1220, 460);
-		if(hyperMode.checked){
+		ctxos.fillText(stat.accStr, ...conv(0.82, 0.57));
+		/*if(hyperMode.checked){
 			ctxos.textAlign = 'center';
 			ctxos.font = `18px ${fonts.choice},Noto Sans SC`;
 			if(stat.health <= 0) ctxos.fillText('HyperMode Failed', 1005, 460);
 			else ctxos.fillText('HyperMode ' + stat.health + '%', 1005, 460);
-		}
+		}*/
 		//noteRank+Early/Late
-		ctxos.font = `27px ${fonts.choice},Noto Sans SC`;
+		ctxos.font = `${conv(0, 0.03)[1]}px ${fonts.choice},Noto Sans SC`;
 		ctxos.textAlign = 'center';
-		ctxos.fillText(stat.perfect, 800, 550);
-		ctxos.fillText(stat.good, 870, 550);
-		ctxos.fillText(stat.noteRank[6], 935, 550);
-		ctxos.fillText(stat.noteRank[2], 995, 550);
-		ctxos.font = `15px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText(stat.perfect, ...conv(0.53, 0.69));
+		ctxos.fillText(stat.good, ...conv(0.58, 0.69));
+		ctxos.fillText(stat.noteRank[6], ...conv(0.625, 0.69));
+		ctxos.fillText(stat.noteRank[2], ...conv(0.67, 0.69));
+		ctxos.font = `${conv(0, 0.02)[1]}px ${fonts.choice},Noto Sans SC`;
 		ctxos.textAlign = 'right';
-		ctxos.fillText(stat.noteRank[7], 1180, 550);
-		ctxos.fillText(stat.noteRank[3], 1180, 570);
+		ctxos.fillText(stat.noteRank[7], ...conv(0.8, 0.692));
+		ctxos.fillText(stat.noteRank[3], ...conv(0.8, 0.717));
 		//data
 		ctxos.textAlign = 'left';
-		ctxos.fillText(stat.data_kb, 750, 740);
+		ctxos.fillText(stat.data_kb, ...conv(0.5, 0.94));
 		//rks
-		ctxos.font = `17px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText('单曲', 1380, 60);
+		ctxos.font = `${conv(0, 0.03)[1]}px ${fonts.choice},Noto Sans SC`;
 		ctxos.fillStyle = '#000';
-		ctxos.fillText(stat.rks, 1370, 90);
+		ctxos.fillText(`单曲RKS:`, ...conv(0.82, 0.07));
+		ctxos.fillText(stat.rks, ...conv(0.82, 0.1));
 	}
 }
 function toScoreStr(x){
@@ -2068,7 +2074,7 @@ const fonts = new Choice('画布字体', ['Saira(Phigros默认字体)', 'Mina(Ph
 fonts.select.addEventListener('change', () => {
 	stat.setConfig('fonts', fonts.choice);
 });
-//const ui = new Choice('结算界面', ['1.x', '2.x'], ['1', '2']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'uiType'));
+const ui = new Choice('结算界面', ['1.x', '2.x'], ['1', '2']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'uiType'));
 const mode = new Choice('分数显示', ['正常', '扣分模式', '拉格兰'], ['normal', 'minus', 'lagrange']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
 mode.select.addEventListener('change', () => {
 	stat.setConfig('mode', mode.choice);
