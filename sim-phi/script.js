@@ -973,7 +973,7 @@ window.addEventListener('load', async function() {
 		Rank: 'src/Rank.png',
 		NoImage: 'src/0.png',
 		// Custom
-		Bg_2: 'src/bg.png',
+		Bg_2: 'src/bg2.png',
 		AP: 'src/AP.png',
 		FC: 'src/FC.png',
 		V: 'src/V.png',
@@ -1546,7 +1546,7 @@ function qwqdraw3(statData) {
 		if(stat.bad == 0 && status != 0 && stat.all) status = 7;
         ctxos.drawImage(ranks[status], ...conv(0.74, 0.28), ...conv(0.15, 0.22));
         //曲名+等级
-		//ctxos.fillStyle = '#fff';
+		ctxos.fillStyle = '#fff';
 		ctxos.font = `${conv(0, 0.05)[1]}px ${fonts.choice},Noto Sans SC`;
 		const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
 		if (dxsnm > conv(0.2, 0)[0]) ctxos.font = `${conv(0, 0.05)[1]/dxsnm*conv(0.2, 0)[0]}px ${fonts.choice},Noto Sans SC`;
