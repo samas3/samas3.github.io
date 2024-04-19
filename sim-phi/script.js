@@ -1539,7 +1539,7 @@ function qwqdraw3(statData) {
 		ctxos.textBaseline = 'middle';
 		ctxos.textAlign = 'left';
 		ctxos.font = `${conv(0, 0.07)[1]}px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText('曲绘', ...conv(0.2, 0.5));
+		//ctxos.fillText('曲绘', ...conv(0.2, 0.5));
         //rank
 		var status = stat.rankStatus;
 		const ranks = [res['AP'], res['V'], res['S'], res['A'], res['B'], res['C'], res['F'], res['FC']];
@@ -1549,10 +1549,10 @@ function qwqdraw3(statData) {
 		ctxos.fillStyle = '#fff';
 		ctxos.font = `${conv(0, 0.05)[1]}px ${fonts.choice},Noto Sans SC`;
 		const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
-		if (dxsnm > conv(0.2, 0)[0]) ctxos.font = `${conv(0, 0.05)[1]/dxsnm*conv(0.2, 0)[0]}px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText(inputName.value || inputName.placeholder, ...conv(0.11, 0.72));
+		if (dxsnm > conv(0.3, 0)[0]) ctxos.font = `${conv(0, 0.05)[1]/dxsnm*conv(0.3, 0)[0]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.fillText(inputName.value || inputName.placeholder, ...conv(0.14, 0.52));
 		ctxos.textAlign = 'right';
-		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), ...conv(0.47, 0.72));
+		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), ...conv(0.5, 0.52));
 		//分数
 		ctxos.fillStyle = '#fff';
 		ctxos.textAlign = 'left';
