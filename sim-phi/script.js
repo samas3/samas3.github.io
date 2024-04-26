@@ -202,7 +202,6 @@ async function checkSupport() {
 	if (!await loadLib('StackBlur', urls.blur, () => isUndefined('StackBlur'))) return -2;
 	if (!await loadLib('md5', urls.md5, () => isUndefined('md5'))) return -3;
 	if(!await loadLib('文件系统', urls.fs, () => isUndefined('saveAs'))) return -999;
-	if(!await loadLib('画布', urls.fabric, () => isUndefined('fabric'))) return -998;
 	sendText('加载声音组件...');
 	const oggCompatible = !!(new Audio).canPlayType('audio/ogg');
 	if (!await loadLib('ogg格式兼容', urls.ogg, () => !oggCompatible && isUndefined('oggmented'))) return -4;
@@ -1534,7 +1533,6 @@ function qwqdraw3(statData) {
 		}
 		//背景+曲绘
         ctxos.drawImage(res['Bg_2'], ...size);
-		//illustrationCut(app.bgImage);
 		ctxos.fillStyle = '#000';
 		ctxos.textBaseline = 'middle';
 		ctxos.textAlign = 'left';
@@ -1783,34 +1781,6 @@ function imgBlur(img) {
 	ctx.drawImage(img, 0, 0);
 	StackBlur.canvasRGBA(canvas, 0, 0, w, h, Math.ceil(Math.min(w, h) * 0.0125));
 	return createImageBitmap(canvas);
-}
-function illustrationCut(img) {
-	var canvas = new fabric.Canvas('cvs', {
-		width: img.width,
-		height: img.height
-	});
-	console.log(canvas);
-	fabric.Image(img, im => {
-		var w = im.width, h = im.height;
-		im.set({
-			left: 0,
-			top: 0,
-			scaleX: imgScale,
-			scaleY: imgScale,
-			clipPath: new fabric.Polygon([
-				{x: 2/9 * w, y: 0},
-				{x: 1/10 * w, y: h},
-				{x: 7/9 * w, y: h},
-				{x: 9/10 * w, y: 0}
-			], {
-				originX: 'center',
-				originY: 'center'
-			})
-		});
-		canvas.add(im);
-		canvas.renderAll();
-	})
-	//return createImageBitmap(canvas);
 }
 /**
  * 给图片上色(limit用于解决iOS的InvalidStateError)
