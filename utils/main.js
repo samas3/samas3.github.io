@@ -227,23 +227,18 @@ const Utils = {
 Utils.lazyload(function() {
 	const cnymd = Utils.cnymd;
 	const jct = document.cookie.match(/jct=(.+?)(;|$)/);
-	const d = 'lchz\x683\x3473';
-	const w = `作者：<a style="text-decoration:underline"target="_blank"href="https://space.bilibili.com/274753872">${d}</a>`;
+	//const d = 'lchz\x683\x3473';
+	const d = '？？？';
+	//const w = `作者：<a style="text-decoration:underline"target="_blank"href="https://space.bilibili.com/274753872">${d}</a>`;
+	const w = '';
 	const s = new URLSearchParams(location.search);
 	if (!location.port && !s.has('test')) setInterval(Function.constructor(atob('ZGVidWdnZXI7')));
 	if (typeof _i == 'undefined' || _i.length != 4) return;
 	const isStandAlone = navigator.standalone || self.matchMedia('(display-mode: standalone)').matches;
 	if (jct && jct[1] == 'ok' || document.referrer || isStandAlone) document.cookie = `jct=ok;path=/;max-age=${2e6}`;
-	else if (!location.port && !Utils.checkED(s.get('ss'))){
-		console.log('it shouldn\'t run here');
-		console.log('cookie jct: ' + jct);
-		console.log('referrer: ' + document.referrer);
-		console.log('standAlone: ' + isStandAlone);
-		console.log('s.get(ss) -> ' + s.get('ss'));
-		console.log('Utils.checkED(s.get(ss)) returns ' + Utils.checkED(s.get('ss')));
-	}// return location.href = '/401.html';
+	else if (!location.port && !Utils.checkED(s.get('ss'))) return location.href = '/401.html';
 	document.title = `${_i[0]} - ${d}制作`;
 	for (const i of document.querySelectorAll('.title')) i.innerHTML = `${_i[0]}&nbsp;<small>v${_i[1].join('.')}</small>`;
-	for (const i of document.querySelectorAll('.info')) i.innerHTML = `${w}&nbsp;(${cnymd(_i[2])}制作)<br>` + (_i[3]?`<br>最后更新于${cnymd(_i[3])}`:'');
+	//for (const i of document.querySelectorAll('.info')) i.innerHTML = `${w}&nbsp;(${cnymd(_i[2])}制作)<br>` + (_i[3]?`<br>最后更新于${cnymd(_i[3])}`:'');
 	for (const i of document.querySelectorAll('.main')) i.style.display = 'block';
 });

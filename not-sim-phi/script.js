@@ -3,7 +3,8 @@ import { audio } from '/utils/aup.js';
 import { full, Timer, getConstructorName, urls, isUndefined, loadJS, frameTimer, time2Str, orientation, FrameAnimater } from './js/common.js';
 import { uploader, ZipReader, readFile } from './js/reader.js';
 import { InteractProxy } from '/utils/interact.js';
-self['_i'] = ['Phi\x67ros模拟器·改', [1, 3, 0], 1611795955, 0];
+//self['_i'] = ['Phi\x67ros模拟器·改', [1, 3, 0], 1611795955, 0];
+self['_i'] = ['NotSP', [34, 73, 48], 347348, 0];
 /** @type {(arg0:string)=>any} */
 const $id = query => document.getElementById(query);
 /** @type {(arg0:string)=>any} */
@@ -2030,7 +2031,8 @@ dev.checkbox.addEventListener('change', evt => {
 });
 var strs = ['AUTOPLAY', 'RECORD'];
 var typeStr = strs[0];
-var copyrightStr = `Phi\x67ros Simulator - Code by lchz\x683\x3473 - Modified by samas3`;
+//var copyrightStr = `Phi\x67ros Simulator - Code by lchz\x683\x3473 - Modified by samas3`;
+var copyrightStr = `No Copyright String`;
 var cnt = 0;
 $id('record').addEventListener('click', () => {
 	$id('feedback').checked = !$id('feedback').checked;
@@ -2040,7 +2042,7 @@ $id('record').addEventListener('click', () => {
 	typeStr = strs[cnt % 2];
 	//copyrightStr = strs[cnt % 2 + 2];
 });
-const fonts = new Choice('画布字体', ['Saira(Phigros默认字体)', 'Mina(Phigros 1.x字体)', 'Titillium Web(lchzh现使用字体)'], ['Saira', 'Mina', 'Custom']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'usedFont'));
+const fonts = new Choice('画布字体', ['Saira', 'Mina', 'Titillium Web'], ['Saira', 'Mina', 'Custom']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'usedFont'));
 fonts.select.addEventListener('change', () => {
 	stat.setConfig('fonts', fonts.choice);
 });
