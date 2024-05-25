@@ -237,7 +237,8 @@ Utils.lazyload(function() {
 	const isStandAlone = navigator.standalone || self.matchMedia('(display-mode: standalone)').matches;
 	if (jct && jct[1] == 'ok' || document.referrer || isStandAlone) document.cookie = `jct=ok;path=/;max-age=${2e6}`;
 	else if (!location.port && !Utils.checkED(s.get('ss'))) return location.href = '/401.html';
-	document.title = `${_i[0]} - ${d}制作`;
+	//document.title = `${_i[0]} - ${d}制作`;
+	document.title = `${_i[0]}`;
 	for (const i of document.querySelectorAll('.title')) i.innerHTML = `${_i[0]}&nbsp;<small>v${_i[1].join('.')}</small>`;
 	//for (const i of document.querySelectorAll('.info')) i.innerHTML = `${w}&nbsp;(${cnymd(_i[2])}制作)<br>` + (_i[3]?`<br>最后更新于${cnymd(_i[3])}`:'');
 	for (const i of document.querySelectorAll('.main')) i.style.display = 'block';
