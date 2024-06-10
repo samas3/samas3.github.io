@@ -10,6 +10,7 @@ import pyttsx3
 import threading
 import requests
 import os
+import sys
 t = Tk()
 t.resizable(0, 0)
 t.wm_attributes('-topmost', 1)
@@ -19,14 +20,17 @@ font = Font(size=20)
 res = Label(t, font=font)
 file = '4班.txt'
 url = 'https://samas3.github.io/chouhao/4班.txt'
-if 'TEMP' not in os.environ:
-    messagebox.showwarning('警告', '找不到缓存目录，缓存不可用')
-    cache = r'\Not Enabled/'
-else:
-    cache = os.environ['TEMP'] + '/chtmp'
-res.grid(row=0, column=0)
+if sys.platform == 'win32':
+    if 'USERPROFILE' not in os.environ:
+        messagebox.showwarning('警告', '找不到缓存目录，缓存不可用')
+        cache = r'\Not Enabled/'
+    else:
+        cache = os.environ['USERPROFILE'] + '/chtmp'
+elif sys.platform == 'linux':
+    cache = './chtmp'
+res.grid(row=0, column=0, columnspan=2)
 path = Label(t, font=font)
-path.grid(row=1, column=0)
+path.grid(row=1, column=0, columnspan=2)
 names = {}
 gnames = {}
 mode = 1
@@ -105,7 +109,7 @@ def pickn():
         mode = 1
         loadFile()
 do = Button(t, text='抽号(学号)', command=pickn, font=font)
-do.grid(row=2, column=0)
+do.grid(row=2, column=0, columnspan=2)
 def pickg():
     global gnames, mode
     if len(gnames) > 0 and mode == 2:
@@ -117,7 +121,7 @@ def pickg():
         mode = 2
         loadFile()
 do2 = Button(t, text='抽号(小组)', command=pickg, font=font)
-do2.grid(row=3, column=0)
+do2.grid(row=3, column=0, columnspan=2)
 def fail():
     res['text'] = '读取失败'
     res['fg'] = 'red'
@@ -179,7 +183,8 @@ def choose_url():
         t2.destroy()
     t2.protocol('WM_DELETE_WINDOW', seturl)
     t2.mainloop()
-Button(t, text='选择学号文件', command=choose_url, font=font).grid(row=4, column=0)
+choose = Button(t, text='选择学号文件', command=choose_url, font=font)
+choose.grid(row=4, column=0, columnspan=2)
 def reload():
     t2 = Toplevel()
     t2.wm_attributes('-topmost', 1)
@@ -196,9 +201,27 @@ def reload():
             messagebox.showerror('Error', 'Wrong password')
     t2.protocol('WM_DELETE_WINDOW', do)
     t2.mainloop()
-Button(t, text='Reload', command=reload, font=('', 12)).grid(row=5, column=0)
-Checkbutton(t, text='语音', font=font, variable=voice).grid(row=6, column=0)
+rel = Button(t, text='Reload', command=reload, font=('', 12))
+rel.grid(row=5, column=0)
+def minimize():
+    for i in hide:
+        i.grid_remove()
+    mini.grid_remove()
+    maxi.grid()
+mini = Button(t, text='Minimize', command=minimize, font=('', 12))
+mini.grid(row=5, column=1)
+vo = Checkbutton(t, text='语音', font=font, variable=voice)
+hide = [path, choose, rel, vo]
+vo.grid(row=6, column=0, columnspan=2)
+def maximize():
+    for i in hide:
+        i.grid()
+    maxi.grid_remove()
+    mini.grid()
+maxi = Button(t, text='Maximize', command=maximize, font=('', 12))
+maxi.grid(row=7, column=0, columnspan=2)
+maxi.grid_remove()
 def main():
-    loadFile()
+    loadFile(True)
     t.mainloop()
 main()
