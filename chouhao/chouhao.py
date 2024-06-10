@@ -223,5 +223,6 @@ maxi.grid(row=7, column=0, columnspan=2)
 maxi.grid_remove()
 def main():
     loadFile(True)
+    minimize()
     t.mainloop()
 main()
