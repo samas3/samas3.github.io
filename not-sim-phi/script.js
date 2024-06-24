@@ -2047,7 +2047,8 @@ fonts.select.addEventListener('change', () => {
 	stat.setConfig('fonts', fonts.choice);
 });
 const ui = new Choice('结算界面', ['1.x', '2.x'], ['1', '2']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'uiType'));
-const mode = new Choice('分数显示', ['正常', '扣分模式', '拉格兰'], ['normal', 'minus', 'lagrange']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
+//const mode = new Choice('分数显示', ['正常', '扣分模式', '拉格兰'], ['normal', 'minus', 'lagrange']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
+const mode = new Choice('分数显示', ['正常', '扣分模式'], ['normal', 'minus']).appendTo($id('view-cfg')).hook(status.reg.bind(status, 'mode'));
 mode.select.addEventListener('change', () => {
 	stat.setConfig('mode', mode.choice);
 });
