@@ -1,5 +1,5 @@
 const MyUtil = {
-    createPopupBox: function(text, bg='#fff'){
+    createPopupBox: function(text, bg='#fff', close=-1){
         var box = document.createElement('div');
         box.className = 'p-box';
         box.style.backgroundColor = bg;
@@ -17,5 +17,10 @@ const MyUtil = {
         };
         box.appendChild(close);
         document.body.appendChild(box);
+        if(close > 0){
+            setTimeout(function(){
+                document.body.removeChild(box);
+            }, close * 1000);
+        }
     }
 }
