@@ -1546,12 +1546,12 @@ function qwqdraw3(statData) {
         ctxos.drawImage(ranks[status], ...conv(0.74, 0.28), ...conv(0.15, 0.22));
         //曲名+等级
 		ctxos.fillStyle = '#fff';
-		ctxos.font = `${conv(0, 0.05)[1]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.font = `${conv(0, 0.08)[1]}px ${fonts.choice},Noto Sans SC`;
 		const dxsnm = ctxos.measureText(inputName.value || inputName.placeholder).width;
-		if (dxsnm > conv(0.3, 0)[0]) ctxos.font = `${conv(0, 0.05)[1]/dxsnm*conv(0.3, 0)[0]}px ${fonts.choice},Noto Sans SC`;
-		ctxos.fillText(inputName.value || inputName.placeholder, ...conv(0.14, 0.52));
-		ctxos.textAlign = 'right';
-		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), ...conv(0.5, 0.52));
+		if (dxsnm > conv(0.5, 0)[0]) ctxos.font = `${conv(0, 0.08)[1]/dxsnm*conv(0.3, 0)[0]}px ${fonts.choice},Noto Sans SC`;
+		ctxos.textAlign = 'center';
+		ctxos.fillText(inputName.value || inputName.placeholder, ...conv(0.35, 0.4));
+		ctxos.fillText((inputLevel.value || inputLevel.placeholder) + ' Lv.' + (numLevel.value || numLevel.placeholder), ...conv(0.3, 0.65));
 		//分数
 		ctxos.fillStyle = '#fff';
 		ctxos.textAlign = 'left';
