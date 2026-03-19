@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Access-Control-Allow-Origin" content="*">
+        <meta charset="utf-8">
+        <link href="/style/style.css" rel="stylesheet">
+        <link href="/style/inputbox.css" rel="stylesheet">
+        <link href="/style/ui.css" rel="stylesheet">
+        <script src="/util/ui.js"></script>
+        <title>MCC WebSocket</title>
+    </head>
+    <body>
+        <div id="index" class="container">
+            <div class="login-wrapper">
+                <div class="header">Connect</div>
+                <div class="form-wrapper">
+                    <input id="ip" placeholder="IP" value="localhost" class="input-item">
+                    <input id="port" placeholder="Port" value="8043" class="input-item">
+                    <input id="connect" value="Connect" type="button" class="btn"><br>
+                </div>
+                <div class="msg">
+                    <span>Status: </span><span id="status">Waiting for connection</span>
+                </div>
+            </div>
+        </div>
+        <div id="terminal" style="display: none;">
+            <textarea id="output" style="width: 100%; overflow: auto; resize: none;" readonly></textarea><br>
+            <input id="input" placeholder="Enter text here" style="width: 90%;">
+            <input id="send" value="Send" type="button" style="width: 5%; float: right;"><br>
+            <span id="ping" class="info">Ping</span>
+            <span id="health" class="info">Health</span>
+            <span id="food" class="info">Food</span>
+            <span id="exp" class="info">Exp</span>
+            <span id="tps" class="info">TPS</span>
+            <span id="time" class="info">World time</span>
+        </div>
+        <script src="./script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,209 @@
+/* chart-calc 专属样式文件 */
+/* 基于网站样式设计系统 - 极简主义、现代、沉浸式暗色主题 */
+/* 依赖全局样式文件: /style/style.css */
+
+/* 容器布局 */
+.chart-calc-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 输入区域 */
+.chart-calc-input {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* 结果区域 */
+.chart-calc-result {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* 表格样式 */
+.chart-calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-lg);
+}
+
+.chart-calc-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chart-calc-table tr:last-child td {
+  border-bottom: none;
+}
+
+.chart-calc-table td:first-child {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  width: 40%;
+}
+
+/* 输入框样式 */
+.chart-calc-input input[type="number"],
+.chart-calc-input input[type="button"] {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-speed-normal) var(--transition-timing-ease);
+}
+
+.chart-calc-input input[type="number"]:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.1);
+}
+
+.chart-calc-input input[type="button"] {
+  background-color: var(--color-bg-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  margin-top: var(--spacing-md);
+}
+
+.chart-calc-input input[type="button"]:hover {
+  background-color: var(--color-bg-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.chart-calc-input input[type="button"]:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 高亮单元格 */
+.highlight {
+  border: 1px solid var(--color-border-focus) !important;
+  background-color: rgba(100, 116, 139, 0.05);
+  border-radius: var(--border-radius-md);
+}
+
+/* 结果文本 */
+.result {
+  text-align: center;
+  color: var(--color-text-primary);
+  margin: var(--spacing-sm) 0;
+}
+
+#rank {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-accent);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#score {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+}
+
+#acc, #rks, #data {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chart-calc-container {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+  }
+  
+  .chart-calc-input,
+  .chart-calc-result {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .chart-calc-table td:first-child {
+    width: 50%;
+  }
+  
+  #rank {
+    font-size: 2rem;
+    min-height: 50px;
+  }
+  
+  #score {
+    font-size: 1.25rem;
+  }
+}
+
+/* 标题样式 */
+.chart-calc-title {
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--color-border);
+}
+
+/* 标签样式 */
+.chart-calc-label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 无障碍焦点样式 */
+.chart-calc-input input:focus-visible,
+.chart-calc-input button:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* 加载状态 */
+.chart-calc-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-bg-accent);
+  border-radius: var(--border-radius-circle);
+  animation: chart-calc-spin 1s linear infinite;
+  margin-left: var(--spacing-sm);
+}
+
+@keyframes chart-calc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

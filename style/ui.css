@@ -1,0 +1,116 @@
+/* 网站样式设计系统 - 弹出框组件样式 */
+/* 基于极简主义、现代、沉浸式暗色主题设计 */
+/* 依赖全局样式文件: style.css */
+
+.p-box {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  box-sizing: border-box;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height);
+  z-index: var(--z-index-modal);
+  max-width: 90%;
+  max-height: 90%;
+  transition: all var(--transition-speed-normal) var(--transition-timing-ease);
+}
+
+.p-box:hover {
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.p-close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-circle);
+  position: absolute;
+  right: -12px;
+  top: -12px;
+  border: 2px solid var(--color-bg-secondary);
+  cursor: pointer;
+  background-color: var(--color-ui-error);
+  color: white;
+  text-align: center;
+  line-height: 28px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-speed-normal) var(--transition-timing-ease);
+  z-index: calc(var(--z-index-modal) + 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.p-close:hover {
+  background-color: var(--color-ui-error-hover);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.p-close:active {
+  transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .p-box {
+    padding: var(--spacing-md);
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .p-close {
+    width: 28px;
+    height: 28px;
+    right: -10px;
+    top: -10px;
+    line-height: 24px;
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* 无障碍焦点样式 */
+.p-close:focus-visible {
+  outline: 2px solid var(--color-bg-accent);
+  outline-offset: 2px;
+}
+
+/* 弹出框内容样式 */
+.p-box span {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 暗色主题下的滚动条样式 */
+.p-box::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.p-box::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-sm);
+}
+
+.p-box::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-sm);
+}
+
+.p-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

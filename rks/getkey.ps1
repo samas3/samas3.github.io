@@ -1,0 +1,1 @@
+$code = & adb shell cat /sdcard/Android/data/com.PigeonGames.Phigros/files/.userdata | ConvertFrom-Json; Write-Host $code.sessionToken

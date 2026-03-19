@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Phigros谱面相关计算</title>
+        <link href="/style/style.css" rel="stylesheet">
+        <link href="style.css" rel="stylesheet">
+        <script src="/util/common.js"></script>
+    </head>
+    <body>
+        <div class="chart-calc-container">
+            <div class="chart-calc-input">
+                <h2 class="chart-calc-title">输入数据</h2>
+                <table class="chart-calc-table">
+                    <tbody>
+                        <tr>
+                            <td><label for="perfect" class="chart-calc-label">Perfect数量:</label></td>
+                            <td><input id="perfect" type="number" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="good" class="chart-calc-label">Good数量:</label></td>
+                            <td><input id="good" type="number" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="combo" class="chart-calc-label">最大连击数:</label></td>
+                            <td><input id="combo" type="number" min="0" value="0"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="notes" class="chart-calc-label">物量:</label></td>
+                            <td><input id="notes" type="number" min="1" value="1"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="level" class="chart-calc-label">定数:</label></td>
+                            <td><input id="level" type="number" min="1" max="16" step="0.1" value="1.0"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input id="submit" type="button" value="计算">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="chart-calc-result">
+                <h2 class="chart-calc-title">计算结果</h2>
+                <table class="chart-calc-table">
+                    <tbody>
+                        <tr>
+                            <td class="highlight">
+                                <p id="rank" class="result">F</p>
+                            </td>
+                            <td class="highlight">
+                                <p id="score" class="result">0000000</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td class="highlight">
+                                <p id="acc" class="result">Accuracy: 0.00%</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="highlight">
+                                <p id="rks" class="result">本曲rks: 0.000</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="highlight">
+                                <p id="data" class="result">获得 0.00 KB Data</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
