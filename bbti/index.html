@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>BBTI 性格测试</title>
+        <link href="/style/style.css" rel="stylesheet">
+        <link href="style.css" rel="stylesheet">
+        <script src="/util/common.js"></script>
+    </head>
+    <body>
+        <div class="bbti-container">
+            <div class="bbti-header">
+                <h1 class="bbti-title">BBTI 性格测试</h1>
+                <p class="bbti-subtitle">发现你的独特 BasketBros 性格特质</p>
+            </div>
+            
+            <div id="quiz" class="bbti-quiz">
+                <div class="bbti-progress">
+                    <div class="bbti-progress-bar" id="progress-bar"></div>
+                </div>
+                <p class="bbti-progress-text" id="progress-text">1 / 18</p>
+                
+                <div class="bbti-question" id="question-text"></div>
+                
+                <div class="bbti-answers" id="answers">
+                </div>
+            </div>
+            
+            <div id="result" class="bbti-result" style="display: none;">
+                <h2 class="bbti-result-title">你的性格类型</h2>
+                <div class="bbti-result-type" id="result-type"></div>
+                <button class="bbti-restart-btn" id="restart-btn">重新测试</button>
+                <div class="bbti-result-scores" id="result-scores"></div>
+                <div id="result-desc" class="bbti-result-desc"></div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>

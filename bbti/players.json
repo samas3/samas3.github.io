@@ -1,0 +1,200 @@
+[
+  {
+    "name": "Zane Willow",
+    "realName": "Zion Williamson",
+    "stats": [5, 7, 10, 8, 5, 4],
+    "features": "爆发力顶级，篮下手感柔和，同体型里速度与弹跳无敌，需严格管理体重与出勤率。"
+  },
+  {
+    "name": "Trey Youth",
+    "realName": "Trae Young",
+    "stats": [9, 5, 6, 9, 9, 2],
+    "features": "球商极高，持球组织与超远射程顶尖，防守端因体型受限，比赛节奏掌控力强。"
+  },
+  {
+    "name": "Luke Magic",
+    "realName": "Luka Dončić",
+    "stats": [8, 8, 6, 6, 9, 4],
+    "features": "强壮且技术全面，背身与挡拆节奏大师，能自主创造任何得分机会，休赛期体型管理常受关注。"
+  },
+  {
+    "name": "Step Flurry",
+    "realName": "Stephen Curry",
+    "stats": [10, 6, 6, 7, 9, 2],
+    "features": "历史级三分射手，无球跑动与接球出手速度极快，引力效应改变现代篮球防守体系。"
+  },
+  {
+    "name": "Clayton Tommy",
+    "realName": "Klay Thompson",
+    "stats": [9, 8, 6, 7, 7, 6],
+    "features": "顶级无球跑位与接球投篮能力，巅峰期防守压迫感强，性格低调甘当团队拼图。"
+  },
+  {
+    "name": "Jamie Hardhat",
+    "realName": "James Harden",
+    "stats": [8, 6, 7, 8, 9, 1],
+    "features": "规则利用大师，造犯规与后撤步三分历史级，挡拆发起与分配球能力顶尖，防守端侧重策略性协防。"
+  },
+  {
+    "name": "LeBling Jams",
+    "realName": "LeBron James",
+    "stats": [7, 8, 7, 8, 8, 6],
+    "features": "全能锋线标杆，突破分球与快攻推进历史顶级，篮球智商与比赛阅读能力极强，射程随生涯阶段稳步提升。"
+  },
+  {
+    "name": "Kay Sniper",
+    "realName": "Kevin Durant",
+    "stats": [8, 9, 6, 6, 8, 5],
+    "features": "七尺身高搭配后卫级投射与运球，无差别单打能力独一档，中距离干拔无解，护框能力被低估。"
+  },
+  {
+    "name": "Andy DeVris",
+    "realName": "Anthony Davis",
+    "stats": [6, 9, 7, 7, 5, 8],
+    "features": "移动速度与协防扫荡能力在大个子中罕见，面框与挡拆顺下终结高效，伤病管理与持续出勤是生涯关键。"
+  },
+  {
+    "name": "Big Nick",
+    "realName": "Nikola Jokić",
+    "stats": [8, 10, 4, 5, 8, 5],
+    "features": "中锋位置的组织轴心，传球视野与策应能力历史级，低位脚步与中投稳定，对抗与下盘力量极佳。"
+  },
+  {
+    "name": "Geo Freako",
+    "realName": "Giannis Antetokounmpo",
+    "stats": [4, 9, 8, 8, 6, 8],
+    "features": "步幅极大，转换进攻摧枯拉朽，防守覆盖面积广，近年投射与罚球技术显著提升。"
+  },
+  {
+    "name": "Veloci Raptor",
+    "realName": "猛龙队群像/文化梗",
+    "stats": [2, 5, 10, 10, 6, 2],
+    "features": "非特指单名球员，代表猛龙队锋线群的协作防守、团队篮球与关键战韧性。"
+  },
+  {
+    "name": "Lowry Birdhouse",
+    "realName": "Larry Bird",
+    "stats": [10, 7, 5, 6, 8, 4],
+    "features": "历史级射手与垃圾话大师，不靠绝对速度靠节奏与球商取胜，传球视野与关键球能力顶级。"
+  },
+  {
+    "name": "Mellow Baller",
+    "realName": "LaMelo Ball",
+    "stats": [7, 7, 6, 9, 9, 4],
+    "features": "高个子控卫节奏感极佳，传球手法华丽且视野开阔，擅长推反击，防守端需提升横移与专注度。"
+  },
+  {
+    "name": "Shackton Diesel",
+    "realName": "Shaquille O'Neal",
+    "stats": [1, 10, 9, 7, 4, 4],
+    "features": "篮下统治力历史级，力量与爆发力结合完美，巅峰期内线防守威慑力极强，罚球为技术短板。"
+  },
+  {
+    "name": "Ant Eddy",
+    "realName": "Anthony Edwards",
+    "stats": [7, 7, 9, 9, 7, 7],
+    "features": "运动天赋与投射结合体，球风硬朗敢打敢拼，持球突破与关键球能力突出，领袖气质外放。"
+  },
+  {
+    "name": "Jammy Butter",
+    "realName": "Jimmy Butler",
+    "stats": [6, 6, 7, 7, 7, 9],
+    "features": "季后赛硬汉代表，中距离与造杀伤能力稳定，防守端专注且强硬，对团队纪律与拼搏精神要求极高。"
+  },
+  {
+    "name": "Zat MaChine",
+    "realName": "Zach LaVine",
+    "stats": [9, 6, 10, 9, 6, 4],
+    "features": "两届扣篮王，腾空高度与空中作业能力顶尖，三分与持球投技术成熟，防守端需提升持续专注度。"
+  },
+  {
+    "name": "Ty DaHero",
+    "realName": "Tyler Herro",
+    "stats": [8, 5, 6, 8, 7, 4],
+    "features": "顶级第六人级别得分手，无球跑位与接球三分高效，持球突破节奏流畅，防守端依赖团队体系掩护。"
+  },
+  {
+    "name": "Colby Mamba",
+    "realName": "Kobe Bryant",
+    "stats": [7, 6, 9, 9, 8, 7],
+    "features": "曼巴精神化身，技术打磨极致，后仰跳投与脚步无解，求胜欲与比赛专注度历史顶级。"
+  },
+  {
+    "name": "Mike Goat",
+    "realName": "Michael Jordan",
+    "stats": [7, 6, 9, 9, 8, 10],
+    "features": "攻防一体标杆，第一步爆发力与滞空能力顶级，关键球与竞争心态无短板，领导力以高标准著称。"
+  },
+  {
+    "name": "Jan Soarant",
+    "realName": "Ja Morant",
+    "stats": [6, 5, 10, 9, 9, 5],
+    "features": "爆发力与第一步历史级，突破路线选择大胆无畏，转换进攻与空中终结极具观赏性，打法激进需平衡身体损耗。"
+  },
+  {
+    "name": "Joe ImBig",
+    "realName": "Joel Embiid",
+    "stats": [7, 9, 6, 5, 5, 7],
+    "features": "现代中锋全能模板，背身单打、面框投射与策应兼备，护框能力顶尖，比赛节奏偏沉稳。"
+  },
+  {
+    "name": "Angela Rice",
+    "realName": "Angel Reese",
+    "stats": [4, 7, 6, 7, 4, 7],
+    "features": "篮板嗅觉与卡位技术顶尖，两双产量稳定，赛场拼劲与场外影响力并重，WNBA新生代代表。"
+  },
+  {
+    "name": "Devo Bookend",
+    "realName": "Devin Booker",
+    "stats": [8, 6, 5, 6, 7, 2],
+    "features": "进攻万花筒，中距离与三分技术精湛，挡拆发起流畅，防守端专注度与对抗持续提升中。"
+  },
+  {
+    "name": "Kyle Irking",
+    "realName": "Kyrie Irving",
+    "stats": [7, 5, 5, 8, 10, 4],
+    "features": "历史级人球结合能力，控球技巧与终结手活登峰造极，左右手均衡，突破路线极具创造力。"
+  },
+  {
+    "name": "Jay Tater",
+    "realName": "Jayson Tatum",
+    "stats": [7, 7, 6, 7, 7, 6],
+    "features": "锋线持球核心，尺寸与技术结合完美，三分产量与造犯规能力突出，季后赛硬解技术逐年进化。"
+  },
+  {
+    "name": "Copper Fragg",
+    "realName": "Cooper Flagg",
+    "stats": [7, 8, 7, 7, 6, 6],
+    "features": "高顺位新星，锋线尺寸搭配出色控投能力，球商高且防守端可换防多个位置，职业赛场潜力巨大。"
+  },
+  {
+    "name": "Catie Clerk",
+    "realName": "Caitlin Clark",
+    "stats": [10, 4, 5, 7, 8, 3],
+    "features": "超远射程与高难度投射能力历史级，挡拆发起与传球视野开阔，大心脏属性强，比赛节奏掌控力极佳。"
+  },
+  {
+    "name": "Vic Wamby",
+    "realName": "Victor Wembanyama",
+    "stats": [6, 11, 6, 6, 6, 8],
+    "features": "独角兽体型，身高臂展搭配后卫级运投技术，护框与协防覆盖面积历史级，增重与核心力量是现阶段重点。"
+  },
+  {
+    "name": "Jamel Murdy",
+    "realName": "Jamal Murray",
+    "stats": [8, 6, 6, 7, 8, 7],
+    "features": "挡拆发起与关键球能力突出，中距离与三分稳定性佳，季后赛表现常大幅跃升，完美二当家或双核之一。"
+  },
+  {
+    "name": "Shy Grievous",
+    "realName": "Shai Gilgeous-Alexander",
+    "stats": [8, 6, 7, 8, 9, 4],
+    "features": "节奏大师，中距离与突破造杀伤历史级，进攻选择极其合理，防守端抢断预判出色。"
+  },
+  {
+    "name": "Chad Holdem",
+    "realName": "Chet Holmgren",
+    "stats": [6, 10, 6, 6, 5, 10],
+    "features": "锋卫摇摆人身材搭配内线防守直觉，换防能力与护框威慑力顶尖，投篮手感柔和，对抗强度持续适应中。"
+  }
+]
