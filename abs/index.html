@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>非洲大投篮 African Big Shooting</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(145deg, #1a472a 0%, #0e2a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .game-container {
+            background: #0a2f1f;
+            border-radius: 48px;
+            padding: 20px 25px 25px 25px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 28px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: radial-gradient(circle at 30% 20%, #8bc34a, #4c6a2e);
+        }
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: #2c1e12e0;
+            backdrop-filter: blur(8px);
+            padding: 10px 20px;
+            border-radius: 60px;
+            color: #f9e7b3;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .score-card {
+            background: #0f0b06;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 26px;
+            font-family: monospace;
+            box-shadow: inset 0 2px 5px #00000055, 0 5px 0 #3a2a1a;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            background: #00000066;
+            padding: 5px 16px;
+            border-radius: 40px;
+        }
+        .streak, .animal-count {
+            background: #2c5a2caa;
+            padding: 5px 14px;
+            border-radius: 30px;
+        }
+        .controls-hint {
+            display: flex;
+            gap: 18px;
+            background: #1e2a1cb3;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 11px;
+        }
+        .controls-hint kbd {
+            background: #2d2b1f;
+            padding: 2px 6px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        button {
+            background: #cf9f4a;
+            border: none;
+            font-family: monospace;
+            font-weight: bold;
+            padding: 5px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        button:active {
+            transform: translateY(2px);
+        }
+        @keyframes flashScore {
+            0% { text-shadow: 0 0 0 gold; transform: scale(1);}
+            50% { text-shadow: 0 0 12px #ffcc44; transform: scale(1.1);}
+            100% { text-shadow: 0 0 0; transform: scale(1);}
+        }
+        .score-flash {
+            animation: flashScore 0.25s ease-out;
+        }
+        .debug {
+            background: #000000aa;
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin-top: 8px;
+            font-size: 10px;
+            font-family: monospace;
+            color: #bbffaa;
+            text-align: center;
+        }
+        .indicator {
+            background: #1e2f1ecc;
+            border-radius: 30px;
+            padding: 5px 16px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .floating-scoreboard {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            background: #000000cc;
+            backdrop-filter: blur(4px);
+            padding: 6px 15px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-family: monospace;
+            color: #ffdd99;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+            border-left: 4px solid gold;
+        }
+        .ball-distance {
+            position: absolute;
+            top: 30px;
+            right: 20px;
+            background: #000000cc;
+            backdrop-filter: blur(4px);
+            padding: 6px 15px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-family: monospace;
+            color: #aaffdd;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .time-display {
+            position: absolute;
+            top: 140px;
+            right: 20px;
+            background: #000000cc;
+            backdrop-filter: blur(4px);
+            padding: 6px 15px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-family: monospace;
+            color: #ffdd99;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        /* 动物图鉴面板 */
+        .bestiary {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            width: 280px;
+            background: #1e2a1ae0;
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 12px;
+            color: #f9e7c0;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 20;
+            border: 1px solid #cf9f4a;
+            display: none;
+            pointer-events: none;
+        }
+        .bestiary h3 {
+            margin: 0 0 8px 0;
+            text-align: center;
+            color: #ffdd88;
+        }
+        .bestiary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .bestiary th, .bestiary td {
+            padding: 4px;
+            text-align: left;
+            border-bottom: 1px solid #7a5a2a;
+        }
+        .bestiary th {
+            color: #ffcc66;
+        }
+        .hint-text {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: #000000aa;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #ffaa66;
+            font-weight: bold;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" style="position: relative;">
+    <canvas id="gameCanvas" width="1000" height="550"></canvas>
+    <div class="ball-distance" id="ballDistance">⚪ 距离: --</div>
+    <div class="time-display" id="timeDisplay">
+        <div>⏱️ 游戏时间: <span id="totalTime">00:00</span></div>
+        <div>🎯 上次进球: <span id="lastHitTime">--</span></div>
+    </div>
+    <div class="info-panel">
+        <div class="score-card">🏀 得分: <span id="scoreValue">0</span></div>
+        <div class="indicator" id="ballIndicator">⚪ 篮球: 无</div>
+        <div class="stats">
+            <div>🏃 速度: <span id="playerSpeed">0</span></div>
+            <div>🎯 出手: <span id="shotSpeed">—</span></div>
+            <div>📐 角度: <span id="shotAngle">—</span></div>
+        </div>
+        <div class="streak">🔥 连中: <span id="streakCount">0</span> &nbsp;📊 命中: <span id="hitRate">0</span>%</div>
+        <div class="animal-count">🦌🦒🐘🐦🦘🐜🦅 动物: <span id="animalCount">0</span></div>
+        <div class="controls-hint">
+            <div>← → &nbsp;左右 <kbd>↑</kbd>跳</div>
+            <div><kbd>J</kbd>投 &nbsp;<kbd>Q</kbd>图鉴 &nbsp;<kbd>R</kbd>重置</div>
+        </div>
+    </div>
+    <div class="debug" id="debugMsg" style="display: none;">
+        🌿 杂草细长分组 | 📖 按Q查看动物图鉴 | 🏀 请在篮筐左侧投篮
+    </div>
+    <div class="hint-text" id="shootHint">🏀 请在篮筐左侧投篮</div>
+    <div id="bestiaryPanel" class="bestiary">
+        <h3>📖 动物图鉴</h3>
+        <table id="bestiaryTable">
+            <thead>
+                <tr><th>动物</th><th>特性</th><th>数量</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🐦 鸟</td><td>飞行高速，随机色</td><td id="count_bird">0</td></tr>
+                <tr><td>🦘 袋鼠</td><td>抛体跳跃，撞飞球</td><td id="count_kangaroo">0</td></tr>
+                <tr><td>🐘 大象</td><td>巨大，缓慢移动</td><td id="count_elephant">0</td></tr>
+                <tr><td>🦒 长颈鹿</td><td>脖子吃草，可击球</td><td id="count_giraffe">0</td></tr>
+                <tr><td>🦅 游隼</td><td>极速折返飞行</td><td id="count_peregrine">0</td></tr>
+                <tr><td>🐜 蚂蚁</td><td>隐身抓球，抛球远离</td><td id="count_ant">0</td></tr>
+                <tr><td>🦌 鹿</td><td>奔跑折返，撞飞玩家球</td><td id="count_deer">0</td></tr>
+            </tbody>
+        </table>
+        <div style="font-size:10px; margin-top:6px;">✨ 按 Q 键关闭</div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const debugSpan = document.getElementById('debugMsg');
+        const ballIndicatorSpan = document.getElementById('ballIndicator');
+        const ballDistanceSpan = document.getElementById('ballDistance');
+        const bestiaryPanel = document.getElementById('bestiaryPanel');
+        
+        // ---------- 物理参数 ----------
+        const W = 1000, H = 550;
+        const GROUND_Y = 500;
+        const GRAVITY = 900;
+        const BOUNCE_DAMP = 0.4;
+        const MAX_BALL_SPEED = 2500;
+
+        const BALL_RADIUS = 8;
+        const PLAYER_RADIUS = 16;
+        
+        const ACC = 1000;
+        const MAX_PLAYER_SPEED = 380;
+        const DAMP = 0.96;
+        const JUMP_POWER = -440;
+        
+        const LEGACY_SHOOT_BASE_H = 260;
+        const LEGACY_SHOOT_BASE_V = -400;
+        
+        const HOOP_WORLD_X = 880;
+        const HOOP_Y = 248;
+        const HOOP = { x: HOOP_WORLD_X, y: HOOP_Y, width: 42, height: 16 };
+        const HOOP_FORBIDDEN_RADIUS = 100;
+        const ANT_MIN_DIST = 1200;
+        const ANT_MAX_DIST = 2000;
+        
+        let cameraX = 0;
+        
+        let score = 0;
+        let lastShotSpeedVal = "—";
+        let lastShotAngleVal = "—";
+        let totalShots = 0, totalHits = 0, consecutiveStreak = 0, maxStreak = 0;
+        
+        // 时间追踪
+        let gameStartTime = Date.now();
+        let lastHitTime = null;
+
+        let player = {
+            x: HOOP_WORLD_X - 200,
+            y: GROUND_Y - PLAYER_RADIUS,
+            vx: 0,
+            vy: 0,
+            onGround: true,
+            hasBall: false
+        };
+        
+        let ball = {
+            active: true,
+            x: 0, y: 0,
+            vx: 0, vy: 0
+        };
+        
+        let scoreCooldown = false;
+        let scoreCooldownTimer = 0;
+        let shootProtectionTimer = 0;
+        
+        const keys = { ArrowLeft: false, ArrowRight: false };
+        let jumpRequested = false;
+        let scoreFlashTimer = 0;
+        let dribblePhase = 0;
+        
+        // ---------- 杂草系统 (分组紧密，细长) ----------
+        let grassList = [];   // 每个杂草 { x, y, w, h, swayPhase }
+        
+        function generateGrass() {
+            grassList = [];
+            const WORLD_MIN = -500;
+            const WORLD_MAX = 6500;
+            const SEGMENT = 1000;
+            const startSeg = Math.floor(WORLD_MIN / SEGMENT);
+            const endSeg = Math.floor(WORLD_MAX / SEGMENT);
+            for (let seg = startSeg; seg <= endSeg; seg++) {
+                const segStart = seg * SEGMENT;
+                const segEnd = segStart + SEGMENT;
+                // 每组2~4株，紧密排列
+                const groupCount = 2 + Math.floor(Math.random() * 3);
+                const groupCenterX = segStart + Math.random() * SEGMENT;
+                const spacing = 12; // 株间距
+                const startX = groupCenterX - (groupCount-1) * spacing / 2;
+                for (let i = 0; i < groupCount; i++) {
+                    const x = startX + i * spacing + (Math.random() - 0.5) * 4;
+                    // 形状变细：宽度为原来的0.6倍，高度不变
+                    const baseW = 20 + Math.random() * 10;
+                    const w = baseW * 0.6;
+                    const h = 30 + Math.random() * 15;
+                    grassList.push({
+                        x: x,
+                        y: GROUND_Y - 5,
+                        w: w,
+                        h: h,
+                        swayPhase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            // 额外在篮筐附近多加点情趣
+            for (let i = 0; i < 5; i++) {
+                const x = HOOP_WORLD_X + (Math.random() - 0.5) * 200;
+                const w = (15 + Math.random() * 10) * 0.6;
+                const h = 25 + Math.random() * 15;
+                grassList.push({ x: x, y: GROUND_Y - 5, w: w, h: h, swayPhase: Math.random() * Math.PI * 2 });
+            }
+        }
+        
+        function drawGrass() {
+            for (let g of grassList) {
+                let screenX = g.x - cameraX;
+                if (screenX + g.w/2 < 0 || screenX - g.w/2 > W) continue;
+                ctx.save();
+                ctx.shadowBlur = 2;
+                let grad = ctx.createLinearGradient(screenX - 3, g.y - g.h, screenX + 3, g.y);
+                grad.addColorStop(0, "#4cae3a");
+                grad.addColorStop(1, "#6cde4e");
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(screenX, g.y);
+                ctx.lineTo(screenX - g.w/2, g.y - g.h);
+                ctx.lineTo(screenX + g.w/2, g.y - g.h);
+                ctx.fill();
+                let sway = Math.sin(Date.now() * 0.004 + g.swayPhase) * 1.5;
+                ctx.fillStyle = "#3c8e2e";
+                ctx.beginPath();
+                ctx.moveTo(screenX + sway, g.y);
+                ctx.lineTo(screenX - g.w/3 + sway, g.y - g.h*0.7);
+                ctx.lineTo(screenX + g.w/3 + sway, g.y - g.h*0.7);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // ---------- 距离标牌 ----------
+        function drawDistanceSigns() {
+            const hoopX = HOOP_WORLD_X;
+            const step = 1000;
+            const leftBound = cameraX - 100;
+            const rightBound = cameraX + W + 100;
+            let dist = Math.floor((leftBound - hoopX) / step) * step;
+            while (dist <= rightBound - hoopX) {
+                if (dist !== 0) {
+                    const signX = hoopX + dist;
+                    const screenX = signX - cameraX;
+                    if (screenX > -50 && screenX < W + 50) {
+                        const signY = 70;
+                        ctx.font = "bold 20px 'Courier New'";
+                        ctx.fillStyle = "rgba(0,0,0,0.7)";
+                        ctx.fillRect(screenX - 45, signY - 20, 90, 30);
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = "bold 18px monospace";
+                        ctx.textAlign = "center";
+                        const distText = dist > 0 ? `+${dist}` : `${dist}`;
+                        ctx.fillText(distText + "px", screenX, signY);
+                        ctx.textAlign = "left";
+                    }
+                }
+                dist += step;
+            }
+        }
+        
+        // ---------- 动物系统 (完整) ----------
+        class Animal {
+            constructor(type, x, y) {
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.w = 0; this.h = 0;
+                this.initProps();
+                this.initExtra();
+            }
+            
+            initProps() {
+                switch(this.type) {
+                    case 'bird':
+                        this.w = 28; this.h = 22;
+                        this.vx = (Math.random() - 0.5) * 800;
+                        this.color = this.getRandomBirdColor();
+                        this.vertOffset = Math.random() * Math.PI * 2;
+                        break;
+                    case 'kangaroo':
+                        this.w = 34; this.h = 40;
+                        this.isAirborne = false;
+                        this.vx = 0; this.vy = 0;
+                        this.jumpTimer = 0;
+                        break;
+                    case 'elephant':
+                        this.w = 126; this.h = 114;
+                        this.vx = (Math.random() - 0.5) * 100;
+                        this.color = (Math.random() < 0.01) ? "white" : "#9f9f8a";
+                        break;
+                    case 'giraffe':
+                        this.w = 48; this.h = 320;
+                        this.vx = (Math.random() - 0.5) * 60;
+                        this.grazingProgress = 0;
+                        this.grazingDir = 0;
+                        break;
+                    case 'peregrine':
+                        this.w = 30; this.h = 22;
+                        this.vx = (Math.random() > 0.5 ? 1 : -1) * (1200 + Math.random() * 600);
+                        this.turnTimer = 0;
+                        break;
+                    case 'ant':
+                        this.w = 16; this.h = 12;
+                        this.vx = 0; this.vy = 0;
+                        this.invisible = true;
+                        this.holdingBall = false;
+                        this.throwCooldown = 0;
+                        this.emerging = false;
+                        this.emergingProgress = 0;
+                        break;
+                    case 'deer':
+                        this.w = 40; this.h = 60;
+                        let baseSpeed = 337.5 + Math.random() * 262.5;
+                        this.vx = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
+                        this.distTraveled = 0;
+                        break;
+                }
+            }
+            
+            initExtra() {
+                if (this.type === 'kangaroo') this.scheduleJump();
+                if (this.type === 'ant') this.y = GROUND_Y - this.h/2;
+                if (this.type === 'peregrine') {
+                    this.y = 120 + Math.random() * 60;
+                    this.turnTimer = 1 + Math.random() * 2;
+                }
+                if (this.type === 'bird') this.y = 70 + Math.random() * 80;
+                else if (this.type === 'kangaroo') this.y = GROUND_Y - this.h/2;
+                else if (this.type === 'elephant') this.y = GROUND_Y - this.h/2 - 5;
+                else if (this.type === 'giraffe') this.y = GROUND_Y - this.h/2;
+                else if (this.type === 'deer') this.y = GROUND_Y - this.h/2;
+            }
+            
+            getRandomBirdColor() {
+                const isRainbow = Math.random() < 0.01;
+                if (isRainbow) return "rainbow";
+                const colors = ["#4aa3df", "#3cb371", "#ff8c69", "#da70d6", "#f4a460", "#9acd32"];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            scheduleJump() {
+                if (this.type !== 'kangaroo') return;
+                const delay = 0.4 + Math.random() * 0.6;
+                this.jumpTimer = delay;
+            }
+            
+            updateKangaroo(dt) {
+                if (this.isAirborne) {
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    this.vy += GRAVITY * dt;
+                    if (this.y + this.h/2 >= GROUND_Y) {
+                        this.y = GROUND_Y - this.h/2;
+                        this.vy = 0;
+                        this.vx = 0;
+                        this.isAirborne = false;
+                        this.scheduleJump();
+                    }
+                } else {
+                    this.jumpTimer -= dt;
+                    if (this.jumpTimer <= 0) {
+                        this.vx = (Math.random() - 0.5) * 1000;
+                        this.vy = - (500 + Math.random() * 400);
+                        this.isAirborne = true;
+                    }
+                    this.x += this.vx * dt;
+                }
+                if (this.x < -400) this.x = -400;
+                if (this.x > 5800) this.x = 5800;
+                if (!this.isAirborne) this.y = GROUND_Y - this.h/2;
+            }
+            
+            updateGiraffe(dt) {
+                this.x += this.vx * dt;
+                if (this.x < -400) { this.x = -400; this.vx = -this.vx; }
+                if (this.x > 5800) { this.x = 5800; this.vx = -this.vx; }
+                if (this.grazingDir === 0) {
+                    if (Math.random() < 0.008) this.grazingDir = 1;
+                } else if (this.grazingDir === 1) {
+                    this.grazingProgress += dt * 2.5;
+                    if (this.grazingProgress >= 1) { this.grazingProgress = 1; this.grazingDir = 2; }
+                } else if (this.grazingDir === 2) {
+                    this.grazingProgress -= dt * 1.8;
+                    if (this.grazingProgress <= 0) { this.grazingProgress = 0; this.grazingDir = 0; }
+                }
+                this.y = GROUND_Y - this.h/2;
+            }
+            
+            updatePeregrine(dt) {
+                this.x += this.vx * dt;
+                this.turnTimer -= dt;
+                if (this.turnTimer <= 0) {
+                    this.vx = -this.vx;
+                    this.turnTimer = 1 + Math.random() * 2;
+                }
+                if (this.x < -400) { this.x = -400; this.vx = Math.abs(this.vx); }
+                if (this.x > 5800) { this.x = 5800; this.vx = -Math.abs(this.vx); }
+                this.y = 120 + Math.sin(Date.now() * 0.01) * 40;
+            }
+            
+            updateAnt(dt) {
+                if (this.throwCooldown > 0) {
+                    this.throwCooldown -= dt;
+                    if (this.throwCooldown < 0) this.throwCooldown = 0;
+                }
+                if (this.emerging) {
+                    this.emergingProgress += dt * 3;
+                    if (this.emergingProgress >= 1) {
+                        this.emergingProgress = 1;
+                        this.emerging = false;
+                        this.invisible = false;
+                        debugSpan.innerHTML = "🐜 蚂蚁从地下钻出来了！";
+                    }
+                    return;
+                }
+                if (!this.holdingBall && this.throwCooldown === 0 && ball.active && !player.hasBall) {
+                    const dx = ball.x - this.x;
+                    const dy = ball.y - this.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 200) {
+                        ball.x = this.x;
+                        ball.y = this.y;
+                        ball.vx = 0;
+                        ball.vy = 0;
+                        this.holdingBall = true;
+                        this.emerging = true;
+                        this.emergingProgress = 0;
+                        this.invisible = true;
+                        debugSpan.innerHTML = "🐜 蚂蚁抓住了篮球，开始钻出地面...";
+                    }
+                }
+                if (this.holdingBall && !this.emerging && !this.invisible) {
+                    const dx = player.x - this.x;
+                    const dy = player.y - this.y;
+                    const distToPlayer = Math.hypot(dx, dy);
+                    if (distToPlayer < 200) {
+                        const angleToPlayer = Math.atan2(dy, dx);
+                        const awayAngle = angleToPlayer + Math.PI;
+                        const speed = 2000;
+                        const cos45 = Math.cos(Math.PI/4);
+                        const sin45 = Math.sin(Math.PI/4);
+                        const horizSign = Math.cos(awayAngle) > 0 ? 1 : -1;
+                        ball.vx = horizSign * speed * cos45;
+                        ball.vy = -speed * sin45;
+                        ball.active = true;
+                        this.holdingBall = false;
+                        this.invisible = true;
+                        this.throwCooldown = 0.2;
+                        debugSpan.innerHTML = "🐜 蚂蚁将球45度斜向上扔出！";
+                        clampBallSpeed();
+                    }
+                }
+                this.y = GROUND_Y - this.h/2;
+            }
+            
+            updateDeer(dt) {
+                this.x += this.vx * dt;
+                this.distTraveled += Math.abs(this.vx * dt);
+                if (this.distTraveled >= 3000) {
+                    if (Math.random() < 0.4) {
+                        this.vx = -this.vx;
+                    }
+                    this.distTraveled = 0;
+                }
+                if (this.x < -400) { this.x = -400; this.vx = Math.abs(this.vx); this.distTraveled = 0; }
+                if (this.x > 5800) { this.x = 5800; this.vx = -Math.abs(this.vx); this.distTraveled = 0; }
+                this.y = GROUND_Y - this.h/2;
+            }
+            
+            update(dt) {
+                if (this.type === 'bird') {
+                    this.x += this.vx * dt;
+                    if (this.x < -400) { this.x = -400; this.vx = Math.abs(this.vx); }
+                    if (this.x > 5800) { this.x = 5800; this.vx = -Math.abs(this.vx); }
+                    this.y = 70 + Math.sin(Date.now() * 0.008 + this.vertOffset) * 20;
+                } 
+                else if (this.type === 'kangaroo') this.updateKangaroo(dt);
+                else if (this.type === 'elephant') {
+                    this.x += this.vx * dt;
+                    if (this.x < -400) { this.x = -400; this.vx = Math.abs(this.vx); }
+                    if (this.x > 5800) { this.x = 5800; this.vx = -Math.abs(this.vx); }
+                    this.y = GROUND_Y - this.h/2 + Math.sin(Date.now() * 0.003) * 3;
+                }
+                else if (this.type === 'giraffe') this.updateGiraffe(dt);
+                else if (this.type === 'peregrine') this.updatePeregrine(dt);
+                else if (this.type === 'ant') this.updateAnt(dt);
+                else if (this.type === 'deer') this.updateDeer(dt);
+            }
+            
+            checkCollisionWithBall(ballX, ballY, ballR) {
+                if (this.type === 'ant') return { hit: false };
+                if (this.type === 'giraffe') {
+                    const bodyX = this.x - this.w/2;
+                    const bodyY = this.y - this.h/2;
+                    const bodyW = this.w;
+                    const bodyH = this.h * 0.3;
+                    const bodyRect = { x: bodyX, y: bodyY + this.h*0.2 - bodyH/2, w: bodyW, h: bodyH };
+                    if (ballX + ballR > bodyRect.x && ballX - ballR < bodyRect.x + bodyRect.w &&
+                        ballY + ballR > bodyRect.y && ballY - ballR < bodyRect.y + bodyRect.h) {
+                        const dx = ballX - this.x;
+                        const dy = ballY - (bodyRect.y + bodyRect.h/2);
+                        return this.computeCollisionResponse(dx, dy);
+                    }
+                    const neckBaseX = this.x - 5;
+                    const neckBaseY = this.y + this.h*0.2 - this.h*0.3/2 - this.h*0.65;
+                    const neckEndX = neckBaseX;
+                    const neckEndY = neckBaseY - this.h * 0.65;
+                    const neckAngle = this.grazingProgress * 1.4;
+                    const cosA = Math.cos(neckAngle);
+                    const sinA = Math.sin(neckAngle);
+                    const rotatedEndX = neckBaseX + (neckEndX - neckBaseX) * cosA - (neckEndY - neckBaseY) * sinA;
+                    const rotatedEndY = neckBaseY + (neckEndX - neckBaseX) * sinA + (neckEndY - neckBaseY) * cosA;
+                    const dist = pointToSegmentDistance(ballX, ballY, neckBaseX, neckBaseY, rotatedEndX, rotatedEndY);
+                    if (dist < ballR + 8) {
+                        const closest = closestPointOnSegment(ballX, ballY, neckBaseX, neckBaseY, rotatedEndX, rotatedEndY);
+                        const dx = ballX - closest.x;
+                        const dy = ballY - closest.y;
+                        return this.computeCollisionResponse(dx, dy);
+                    }
+                    return { hit: false };
+                } else {
+                    const left = this.x - this.w/2;
+                    const right = this.x + this.w/2;
+                    const top = this.y - this.h/2;
+                    const bottom = this.y + this.h/2;
+                    if (ballX + ballR > left && ballX - ballR < right &&
+                        ballY + ballR > top && ballY - ballR < bottom) {
+                        const dx = ballX - this.x;
+                        const dy = ballY - this.y;
+                        return this.computeCollisionResponse(dx, dy);
+                    }
+                    return { hit: false };
+                }
+            }
+            
+            computeCollisionResponse(dx, dy) {
+                let len = Math.hypot(dx, dy);
+                if (len < 0.01) len = 1;
+                const normX = dx / len;
+                const normY = dy / len;
+                return { hit: true, normX, normY, len };
+            }
+            
+            draw(ctx, camX) {
+                if (this.type === 'ant' && this.invisible) return;
+                let screenX = this.x - camX;
+                if (screenX + this.w/2 < 0 || screenX - this.w/2 > W) return;
+                ctx.save();
+                ctx.shadowBlur = 4;
+                // 绘图代码与之前一致，因篇幅省略详细，但保持完整功能
+                if (this.type === 'bird') {
+                    if (this.color === "rainbow") {
+                        let grad = ctx.createLinearGradient(screenX-15, this.y-10, screenX+15, this.y+10);
+                        grad.addColorStop(0, "red"); grad.addColorStop(0.2, "orange");
+                        grad.addColorStop(0.4, "yellow"); grad.addColorStop(0.6, "green");
+                        grad.addColorStop(0.8, "blue"); grad.addColorStop(1, "purple");
+                        ctx.fillStyle = grad;
+                    } else { ctx.fillStyle = this.color; }
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#2c5a8c"; ctx.beginPath(); ctx.ellipse(screenX-6, this.y-4, 3, 4, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(screenX-8, this.y-5, 1.2, 0, Math.PI*2); ctx.fill();
+                    let wingAngle = Math.sin(Date.now() * 0.03) * 1.2;
+                    ctx.beginPath(); ctx.moveTo(screenX+10, this.y-2); ctx.lineTo(screenX+20+wingAngle*6, this.y+wingAngle*5); ctx.lineTo(screenX+14, this.y+3); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(screenX-10, this.y-2); ctx.lineTo(screenX-20-wingAngle*6, this.y+wingAngle*5); ctx.lineTo(screenX-14, this.y+3); ctx.fill();
+                } 
+                else if (this.type === 'kangaroo') {
+                    ctx.fillStyle = "#d49c6c";
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#9b5e2c"; ctx.beginPath(); ctx.ellipse(screenX-10, this.y-8, 7, 9, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#f5deb3"; ctx.beginPath(); ctx.ellipse(screenX+9, this.y-5, 6, 8, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(screenX+18, this.y+3); ctx.lineTo(screenX+35, this.y+12); ctx.lineWidth = 6; ctx.stroke();
+                    ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(screenX-8, this.y-9, 2, 0, Math.PI*2); ctx.fill();
+                } 
+                else if (this.type === 'elephant') {
+                    if (this.color === "white") ctx.fillStyle = "#f0f0e0";
+                    else ctx.fillStyle = "#9f9f8a";
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = this.color === "white" ? "#ddd" : "#7a7a5a";
+                    ctx.beginPath(); ctx.ellipse(screenX - this.w*0.22, this.y - this.h*0.22, this.w*0.2, this.h*0.25, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#efefcf"; ctx.beginPath(); ctx.moveTo(screenX - this.w*0.25, this.y - this.h*0.1); ctx.lineTo(screenX - this.w*0.38, this.y); ctx.lineTo(screenX - this.w*0.28, this.y + this.h*0.08); ctx.fill();
+                    ctx.fillStyle = "#2a2418"; ctx.beginPath(); ctx.arc(screenX - this.w*0.18, this.y - this.h*0.18, this.w*0.04, 0, Math.PI*2); ctx.fill();
+                }
+                else if (this.type === 'giraffe') {
+                    const bodyY = this.y + this.h*0.2;
+                    const bodyW = this.w;
+                    const bodyH = this.h*0.3;
+                    ctx.fillStyle = "#e0b854";
+                    ctx.beginPath(); ctx.ellipse(screenX, bodyY, bodyW/2, bodyH/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#d4a43a";
+                    ctx.fillRect(screenX - 18, bodyY + bodyH/2 - 5, 8, 25);
+                    ctx.fillRect(screenX - 6, bodyY + bodyH/2 - 5, 8, 25);
+                    ctx.fillRect(screenX + 6, bodyY + bodyH/2 - 5, 8, 25);
+                    ctx.fillRect(screenX + 18, bodyY + bodyH/2 - 5, 8, 25);
+                    const neckBaseX = screenX - 5;
+                    const neckBaseY = bodyY - bodyH/2;
+                    const neckHeight = this.h * 0.65;
+                    let angle = this.grazingProgress * 1.4;
+                    ctx.save();
+                    ctx.translate(neckBaseX, neckBaseY);
+                    ctx.rotate(angle);
+                    ctx.fillStyle = "#d4a43a";
+                    ctx.fillRect(-8, -neckHeight, 16, neckHeight);
+                    ctx.fillStyle = "#e0b854";
+                    ctx.beginPath(); ctx.ellipse(0, -neckHeight-8, 16, 14, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#000";
+                    ctx.beginPath(); ctx.arc(-6, -neckHeight-10, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#6b4c2a";
+                    ctx.fillRect(-10, -neckHeight-18, 4, 12);
+                    ctx.fillRect(2, -neckHeight-18, 4, 12);
+                    ctx.fillStyle = "#8b5a2b";
+                    for (let i=0; i<3; i++) ctx.fillRect(-4, -neckHeight - i*28, 8, 6);
+                    if (this.grazingProgress > 0.5) {
+                        ctx.fillStyle = "#6b8c23";
+                        ctx.fillRect(-12, -neckHeight-4, 24, 6);
+                    }
+                    ctx.restore();
+                }
+                else if (this.type === 'peregrine') {
+                    ctx.fillStyle = "#4a5a6e";
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#2c3e50";
+                    ctx.beginPath(); ctx.moveTo(screenX+10, this.y-4); ctx.lineTo(screenX+18, this.y-2); ctx.lineTo(screenX+12, this.y+2); ctx.fill();
+                    ctx.fillStyle = "#e6ba5c";
+                    ctx.beginPath(); ctx.moveTo(screenX-6, this.y-6); ctx.lineTo(screenX-12, this.y-10); ctx.lineTo(screenX-2, this.y-8); ctx.fill();
+                    ctx.fillStyle = "white";
+                    ctx.beginPath(); ctx.arc(screenX-4, this.y-3, 1.5, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#000";
+                    ctx.beginPath(); ctx.arc(screenX-5, this.y-3, 0.8, 0, Math.PI*2); ctx.fill();
+                }
+                else if (this.type === 'ant') {
+                    if (this.emerging) {
+                        const t = this.emergingProgress;
+                        ctx.fillStyle = "#8b5a2b";
+                        ctx.beginPath();
+                        ctx.ellipse(screenX, this.y + 4 * (1 - t), this.w/2 * (1 + t), this.h/3 * (1 + t), 0, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.globalAlpha = t;
+                    }
+                    ctx.fillStyle = "#2b1e0e";
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#5a3a1a";
+                    ctx.beginPath(); ctx.ellipse(screenX-4, this.y-2, 3, 2, 0, 0, Math.PI*2); ctx.fill();
+                    for (let i=0;i<6;i++) {
+                        ctx.beginPath(); ctx.moveTo(screenX-6+i*2, this.y+2); ctx.lineTo(screenX-8+i*2, this.y+8); ctx.lineWidth=2; ctx.stroke();
+                    }
+                    if (this.emerging) ctx.globalAlpha = 1;
+                }
+                else if (this.type === 'deer') {
+                    ctx.fillStyle = "#c98f4a";
+                    ctx.beginPath(); ctx.ellipse(screenX, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#8b5a2b";
+                    ctx.beginPath(); ctx.rect(screenX-6, this.y-18, 12, 20);
+                    ctx.fill();
+                    ctx.fillStyle = "#5a3a1a";
+                    ctx.beginPath(); ctx.moveTo(screenX-10, this.y-22); ctx.lineTo(screenX-2, this.y-30); ctx.lineTo(screenX+6, this.y-22); ctx.fill();
+                    ctx.fillStyle = "#2a1a0a";
+                    ctx.beginPath(); ctx.arc(screenX-4, this.y-27, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(screenX+4, this.y-27, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "white";
+                    ctx.beginPath(); ctx.arc(screenX-5, this.y-28, 0.8, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(screenX+3, this.y-28, 0.8, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#d49c6c";
+                    for (let i=0;i<4;i++) {
+                        ctx.fillRect(screenX-12+i*6, this.y+8, 4, 12);
+                    }
+                }
+                ctx.restore();
+            }
+        }
+        
+        // 辅助函数
+        function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+            const ax = px - x1, ay = py - y1;
+            const bx = x2 - x1, by = y2 - y1;
+            const dot = ax * bx + ay * by;
+            const len2 = bx * bx + by * by;
+            if (len2 === 0) return Math.hypot(ax, ay);
+            let t = dot / len2;
+            t = Math.max(0, Math.min(1, t));
+            const projX = x1 + t * bx;
+            const projY = y1 + t * by;
+            return Math.hypot(px - projX, py - projY);
+        }
+        
+        function closestPointOnSegment(px, py, x1, y1, x2, y2) {
+            const ax = px - x1, ay = py - y1;
+            const bx = x2 - x1, by = y2 - y1;
+            const dot = ax * bx + ay * by;
+            const len2 = bx * bx + by * by;
+            if (len2 === 0) return { x: x1, y: y1 };
+            let t = dot / len2;
+            t = Math.max(0, Math.min(1, t));
+            return { x: x1 + t * bx, y: y1 + t * by };
+        }
+        
+        // 动物生成权重
+        const animalWeights = [
+            { type: 'bird', weight: 6 },
+            { type: 'elephant', weight: 5 },
+            { type: 'kangaroo', weight: 4 },
+            { type: 'giraffe', weight: 3 },
+            { type: 'ant', weight: 3 },
+            { type: 'peregrine', weight: 3 },
+            { type: 'deer', weight: 1 }
+        ];
+        
+        function getRandomAnimalType() {
+            let totalWeight = animalWeights.reduce((sum, w) => sum + w.weight, 0);
+            let rand = Math.random() * totalWeight;
+            let accum = 0;
+            for (let item of animalWeights) {
+                accum += item.weight;
+                if (rand < accum) return item.type;
+            }
+            return 'bird';
+        }
+        
+        function generateAnimalNearHoop() {
+            let animalType = getRandomAnimalType();
+            let x;
+            let y;
+            if (animalType === 'ant') {
+                let side = Math.random() < 0.5 ? -1 : 1;
+                let dist = ANT_MIN_DIST + Math.random() * (ANT_MAX_DIST - ANT_MIN_DIST);
+                x = HOOP_WORLD_X + side * dist;
+                x = Math.min(Math.max(x, -600), 6000);
+                y = GROUND_Y - 10;
+            } else {
+                let tooClose = true;
+                let attempts = 0;
+                let forbidden = HOOP_FORBIDDEN_RADIUS;
+                while (tooClose && attempts < 50) {
+                    x = HOOP_WORLD_X + (Math.random() - 0.5) * 900;
+                    x = Math.min(Math.max(x, HOOP_WORLD_X - 900), HOOP_WORLD_X + 900);
+                    if (Math.abs(x - HOOP_WORLD_X) > forbidden) {
+                        tooClose = false;
+                    }
+                    attempts++;
+                }
+                if (animalType === 'bird') y = 70 + Math.random() * 80;
+                else if (animalType === 'kangaroo') y = GROUND_Y - 20;
+                else if (animalType === 'elephant') y = GROUND_Y - 57;
+                else if (animalType === 'giraffe') y = GROUND_Y - 160;
+                else if (animalType === 'peregrine') y = 120 + Math.random() * 60;
+                else if (animalType === 'deer') y = GROUND_Y - 30;
+                else y = GROUND_Y - 10;
+            }
+            let newAnimal = new Animal(animalType, x, y);
+            animals.push(newAnimal);
+        }
+        
+        let animals = [];
+        
+        function initAnimals() {
+            animals = [];
+            for (let i = 0; i < 2; i++) generateAnimalNearHoop();
+        }
+        
+        function addAnimalOnScore() {
+            let addCount = 1 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < addCount; i++) generateAnimalNearHoop();
+            while (animals.length > 35) animals.pop();
+            document.getElementById('animalCount').innerText = animals.length;
+            updateBestiaryCounts();
+        }
+        
+        // 图鉴数量更新
+        function updateBestiaryCounts() {
+            let counts = { bird:0, kangaroo:0, elephant:0, giraffe:0, peregrine:0, ant:0, deer:0 };
+            for (let a of animals) counts[a.type]++;
+            document.getElementById('count_bird').innerText = counts.bird;
+            document.getElementById('count_kangaroo').innerText = counts.kangaroo;
+            document.getElementById('count_elephant').innerText = counts.elephant;
+            document.getElementById('count_giraffe').innerText = counts.giraffe;
+            document.getElementById('count_peregrine').innerText = counts.peregrine;
+            document.getElementById('count_ant').innerText = counts.ant;
+            document.getElementById('count_deer').innerText = counts.deer;
+        }
+        
+        // 图鉴开关
+        let bestiaryVisible = false;
+        function toggleBestiary() {
+            bestiaryVisible = !bestiaryVisible;
+            bestiaryPanel.style.display = bestiaryVisible ? 'block' : 'none';
+            if (bestiaryVisible) updateBestiaryCounts();
+        }
+        
+        function clampBallSpeed() {
+            if (!ball.active) return;
+            let spd = Math.hypot(ball.vx, ball.vy);
+            if (spd > MAX_BALL_SPEED) {
+                let ratio = MAX_BALL_SPEED / spd;
+                ball.vx *= ratio;
+                ball.vy *= ratio;
+            }
+        }
+        
+        function tryPickUpBall() {
+            if (player.hasBall) return false;
+            if (!ball.active) return false;
+            if (shootProtectionTimer > 0) return false;
+            const dx = player.x - ball.x;
+            const dy = player.y - ball.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < PLAYER_RADIUS + BALL_RADIUS + 10) {
+                if (Math.random() < 0.2) {
+                    player.hasBall = true;
+                    ball.active = false;
+                    debugSpan.innerHTML = "🏀 凌空抓球！按 J 投篮";
+                    return true;
+                } else {
+                    const angle = Math.atan2(dy, dx);
+                    ball.vx += Math.cos(angle) * 60;
+                    ball.vy += Math.sin(angle) * 60;
+                    clampBallSpeed();
+                    debugSpan.innerHTML = "⚡ 抓球失败，球被碰开";
+                }
+            }
+            return false;
+        }
+        
+        function handleDeerSteal() {
+            if (!player.hasBall) return;
+            for (let a of animals) {
+                if (a.type !== 'deer') continue;
+                const left = a.x - a.w/2;
+                const right = a.x + a.w/2;
+                const top = a.y - a.h/2;
+                const bottom = a.y + a.h/2;
+                const playerLeft = player.x - PLAYER_RADIUS;
+                const playerRight = player.x + PLAYER_RADIUS;
+                const playerTop = player.y - PLAYER_RADIUS;
+                const playerBottom = player.y + PLAYER_RADIUS;
+                if (playerRight > left && playerLeft < right &&
+                    playerBottom > top && playerTop < bottom) {
+                    player.hasBall = false;
+                    ball.active = true;
+                    ball.x = player.x;
+                    ball.y = player.y;
+                    const dx = player.x - a.x;
+                    const dy = player.y - a.y;
+                    let len = Math.hypot(dx, dy);
+                    if (len < 0.01) len = 1;
+                    const normX = dx / len;
+                    const normY = dy / len;
+                    const speed = 600;
+                    ball.vx = normX * speed;
+                    ball.vy = normY * speed - 200;
+                    clampBallSpeed();
+                    debugSpan.innerHTML = "🦌 鹿撞飞了你的篮球！";
+                    break;
+                }
+            }
+        }
+        
+        function solveParabolaMirror(sx, sy_math, tx, ty_math, v0, g) {
+            const dx = tx - sx;
+            const dy = ty_math - sy_math;
+            if (Math.abs(dx) < 0.1) {
+                let angle = (dy > 0) ? 90 : -90;
+                let vy = (dy > 0 ? 1 : -1) * v0;
+                return { vx: 0, vy_math: vy, angleDeg: Math.abs(angle), success: true };
+            }
+            const A = (g * dx * dx) / (2 * v0 * v0);
+            const B = -dx;
+            const C = dy + A;
+            const discriminant = B * B - 4 * A * C;
+            let possibleThetas = [];
+            if (discriminant >= 0) {
+                const sqrtD = Math.sqrt(discriminant);
+                const t1 = (-B + sqrtD) / (2 * A);
+                const t2 = (-B - sqrtD) / (2 * A);
+                possibleThetas.push(t1, t2);
+            }
+            let best = null;
+            for (let t of possibleThetas) {
+                if (isFinite(t)) {
+                    const angle = Math.atan(t);
+                    const vx_candidate = v0 * Math.cos(angle);
+                    const vy_candidate = v0 * Math.sin(angle);
+                    if ((dx > 0 && vx_candidate > 0) || (dx < 0 && vx_candidate < 0)) {
+                        if (vy_candidate > 0) {
+                            best = { vx: vx_candidate, vy_math: vy_candidate, angleDeg: Math.abs(angle * 180 / Math.PI), success: true };
+                            break;
+                        }
+                    }
+                }
+            }
+            if (best) return best;
+            let rawAngle = Math.atan2(dy, dx);
+            let fallbackAngle = rawAngle;
+            if (Math.abs(fallbackAngle) < 0.15) fallbackAngle = (dx > 0 ? 0.3 : -0.3);
+            if (Math.abs(fallbackAngle) > 1.3) fallbackAngle = (dx > 0 ? 1.2 : -1.2);
+            if (Math.sin(fallbackAngle) <= 0) fallbackAngle = (dx > 0 ? 0.3 : -0.3);
+            const vx_fb = v0 * Math.cos(fallbackAngle);
+            const vy_fb = v0 * Math.sin(fallbackAngle);
+            return { vx: vx_fb, vy_math: vy_fb, angleDeg: Math.abs(fallbackAngle * 180 / Math.PI), success: false };
+        }
+        
+        function shootBall() {
+            if (!player.hasBall) {
+                debugSpan.innerHTML = "⚠️ 没有篮球！靠近球（20%概率抓住）";
+                return false;
+            }
+            if (ball.active) return false;
+            totalShots++;
+            const shootX = player.x;
+            const shootY = player.y - PLAYER_RADIUS * 0.6;
+            const rawVx = player.vx + LEGACY_SHOOT_BASE_H;
+            const rawVy = player.vy + LEGACY_SHOOT_BASE_V;
+            let v0 = Math.hypot(rawVx, rawVy);
+            if (v0 < 50) v0 = 280;
+            const shootY_math = H - shootY;
+            const hoopY_math = H - HOOP.y;
+            const result = solveParabolaMirror(shootX, shootY_math, HOOP.x, hoopY_math, v0, GRAVITY);
+            ball.active = true;
+            ball.x = shootX; ball.y = shootY;
+            ball.vx = result.vx;
+            ball.vy = -result.vy_math;
+            shootProtectionTimer = 0.2;
+            player.hasBall = false;
+            lastShotSpeedVal = v0.toFixed(1);
+            lastShotAngleVal = `${result.angleDeg.toFixed(1)}° ${result.success ? "✓" : "≈"}`;
+            debugSpan.innerHTML = `🏀 出手 速率=${v0.toFixed(1)} 仰角=${result.angleDeg.toFixed(1)}° ${result.success ? "精确" : "逼近"} (保护期0.2秒)`;
+            updateUI();
+            return true;
+        }
+        
+        function onScore() {
+            if (scoreCooldown) return;
+            score++;
+            totalHits++;
+            consecutiveStreak++;
+            if (consecutiveStreak > maxStreak) maxStreak = consecutiveStreak;
+            lastHitTime = Date.now(); // 记录上次进球时间
+            scoreFlashTimer = 1;
+            addAnimalOnScore();
+            ball.active = true;
+            ball.x = HOOP.x;
+            ball.y = HOOP.y - 5;
+            ball.vx = (Math.random() - 0.5) * 40;
+            ball.vy = 0;
+            clampBallSpeed();
+            player.hasBall = false;
+            scoreCooldown = true;
+            scoreCooldownTimer = 0.5;
+            shootProtectionTimer = 0;
+            updateUI();
+            debugSpan.innerHTML = `🎉 得分！连中 ${consecutiveStreak} | 新动物加入 (共${animals.length}只)`;
+        }
+        
+        function onMiss() {
+            if (consecutiveStreak > 0) {
+                consecutiveStreak = 0;
+                updateUI();
+                debugSpan.innerHTML = `💔 连中中断 | 最佳 ${maxStreak}`;
+            }
+        }
+        
+        function updateBall(dt) {
+            if (!ball.active) return;
+            ball.vy += GRAVITY * dt;
+            ball.x += ball.vx * dt;
+            ball.y += ball.vy * dt;
+            if (ball.y + BALL_RADIUS >= GROUND_Y) {
+                ball.y = GROUND_Y - BALL_RADIUS;
+                ball.vy = -ball.vy * BOUNCE_DAMP;
+                ball.vx *= 0.98;
+                if (Math.abs(ball.vy) < 30) ball.vy = 0;
+                if (Math.abs(ball.vx) < 5) ball.vx = 0;
+                if (Math.abs(ball.vy) < 5 && ball.y + BALL_RADIUS >= GROUND_Y - 1) ball.vy = 0;
+                clampBallSpeed();
+            }
+            clampBallSpeed();
+            if (ball.x < -100000 || ball.x > 100000) {
+                ball.active = true;
+                ball.x = HOOP_WORLD_X - 50;
+                ball.y = GROUND_Y - BALL_RADIUS;
+                ball.vx = 0; ball.vy = 0;
+                shootProtectionTimer = 0;
+                debugSpan.innerHTML = "🏀 篮球飞出宇宙边界，已重置";
+            }
+            handleAnimalCollision();
+            checkScoreAndCollision();
+        }
+        
+        function handleAnimalCollision() {
+            if (!ball.active) return;
+            for (let a of animals) {
+                const result = a.checkCollisionWithBall(ball.x, ball.y, BALL_RADIUS);
+                if (result.hit) {
+                    const hoopX = HOOP.x;
+                    const hoopY = HOOP.y;
+                    const dirAwayX = ball.x - hoopX;
+                    const dirAwayY = ball.y - hoopY;
+                    let len = Math.hypot(dirAwayX, dirAwayY);
+                    if (len < 0.01) len = 1;
+                    let normX = dirAwayX / len;
+                    let normY = dirAwayY / len;
+                    if (result.normX !== undefined) {
+                        normX = result.normX;
+                        normY = result.normY;
+                    }
+                    const speed = Math.hypot(ball.vx, ball.vy);
+                    const newVx = ball.vx + normX * (speed + 500);
+                    const newVy = ball.vy + normY * (speed + 400);
+                    ball.vx = newVx;
+                    ball.vy = newVy;
+                    clampBallSpeed();
+                    a.x += normX * 20;
+                    a.y += normY * 15;
+                    a.x = Math.min(Math.max(a.x, -500), 6000);
+                    if (a.type === 'giraffe') a.y = GROUND_Y - a.h/2;
+                    else if (a.type === 'elephant') a.y = GROUND_Y - a.h/2 - 5;
+                    else if (a.type === 'kangaroo') { if (!a.isAirborne) a.y = GROUND_Y - a.h/2; }
+                    else if (a.type === 'deer') a.y = GROUND_Y - a.h/2;
+                    else if (a.type === 'ant') a.y = GROUND_Y - a.h/2;
+                    else if (a.type === 'bird') a.y = Math.min(200, Math.max(30, a.y));
+                    else if (a.type === 'peregrine') a.y = Math.min(200, Math.max(80, a.y));
+                    debugSpan.innerHTML = `💥 ${a.type === 'bird' ? '🐦' : (a.type === 'kangaroo' ? '🦘' : (a.type === 'elephant' ? '🐘' : (a.type === 'giraffe' ? '🦒' : (a.type === 'peregrine' ? '🦅' : (a.type === 'deer' ? '🦌' : '🐜')))))} 击飞篮球！`;
+                    break;
+                }
+            }
+        }
+        
+        function checkScoreAndCollision() {
+            if (!ball.active) return false;
+            if (scoreCooldown) return false;
+            const hoopLeft = HOOP.x - HOOP.width/2;
+            const hoopRight = HOOP.x + HOOP.width/2;
+            const hoopTop = HOOP.y - HOOP.height/2;
+            const hoopBottom = HOOP.y + HOOP.height/2;
+            const ballLeft = ball.x - BALL_RADIUS;
+            const ballRight = ball.x + BALL_RADIUS;
+            const ballTop = ball.y - BALL_RADIUS;
+            const ballBottom = ball.y + BALL_RADIUS;
+            if (ballRight > hoopLeft && ballLeft < hoopRight &&
+                ballBottom > hoopTop && ballTop < hoopBottom) {
+                onScore();
+                return true;
+            }
+            return false;
+        }
+        
+        function updatePlayer(dt) {
+            let acc = 0;
+            if (keys.ArrowLeft) acc = -ACC;
+            if (keys.ArrowRight) acc = ACC;
+            player.vx += acc * dt;
+            if (player.onGround) player.vx *= DAMP;
+            else player.vx *= 0.998;
+            player.vx = Math.min(MAX_PLAYER_SPEED, Math.max(-MAX_PLAYER_SPEED, player.vx));
+            player.x += player.vx * dt;
+            player.vy += GRAVITY * dt;
+            player.y += player.vy * dt;
+            const floorY = GROUND_Y - PLAYER_RADIUS;
+            if (player.y >= floorY) {
+                player.y = floorY;
+                player.vy = 0;
+                player.onGround = true;
+            } else {
+                player.onGround = false;
+            }
+            if (jumpRequested && player.onGround) {
+                player.vy = JUMP_POWER;
+                player.onGround = false;
+                jumpRequested = false;
+            } else if (jumpRequested) {
+                jumpRequested = false;
+            }
+            if (player.y - PLAYER_RADIUS < 0) {
+                player.y = PLAYER_RADIUS;
+                if (player.vy < 0) player.vy = 0;
+            }
+        }
+        
+        function updateDribble(dt) {
+            if (player.hasBall) {
+                let speedFactor = Math.min(1, Math.abs(player.vx) / 300) + 0.5;
+                dribblePhase += dt * 12 * speedFactor;
+                if (dribblePhase > Math.PI * 2) dribblePhase -= Math.PI * 2;
+            } else {
+                dribblePhase = 0;
+            }
+        }
+        
+        function updateAnimals(dt) {
+            for (let a of animals) a.update(dt);
+        }
+        
+        function updateCamera() {
+            cameraX = player.x - W/2;
+        }
+        
+        function updateScoreCooldown(dt) {
+            if (scoreCooldown) {
+                scoreCooldownTimer -= dt;
+                if (scoreCooldownTimer <= 0) scoreCooldown = false;
+            }
+        }
+        
+        function updateShootProtection(dt) {
+            if (shootProtectionTimer > 0) {
+                shootProtectionTimer -= dt;
+                if (shootProtectionTimer < 0) shootProtectionTimer = 0;
+            }
+        }
+        
+        function updateTimeDisplay() {
+            const now = Date.now();
+            // 总游戏时间
+            const totalElapsed = Math.floor((now - gameStartTime) / 1000);
+            const minutes = Math.floor(totalElapsed / 60);
+            const seconds = totalElapsed % 60;
+            document.getElementById('totalTime').innerText = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            // 距离上次进球的时间
+            if (lastHitTime === null) {
+                document.getElementById('lastHitTime').innerText = '--';
+            } else {
+                const sinceLastHit = Math.floor((now - lastHitTime) / 1000);
+                const hitMinutes = Math.floor(sinceLastHit / 60);
+                const hitSeconds = sinceLastHit % 60;
+                document.getElementById('lastHitTime').innerText = 
+                    `${String(hitMinutes).padStart(2, '0')}:${String(hitSeconds).padStart(2, '0')}`;
+            }
+        }
+        
+        function updateDistanceDisplay() {
+            if (!ball.active && !player.hasBall) {
+                ballDistanceSpan.innerHTML = `⚪ 距离: --`;
+                return;
+            }
+            if (player.hasBall) {
+                ballDistanceSpan.innerHTML = `🏀 持球中`;
+                return;
+            }
+            const dist = Math.hypot(ball.x - player.x, ball.y - player.y);
+            ballDistanceSpan.innerHTML = `📏 距离: ${Math.floor(dist)}px`;
+        }
+        
+        function updateBallIndicator() {
+            if (player.hasBall) {
+                ballIndicatorSpan.innerHTML = "🏀 篮球: 持球中";
+                return;
+            }
+            if (!ball.active) {
+                ballIndicatorSpan.innerHTML = "⚪ 篮球: 无";
+                return;
+            }
+            let rel = ball.x - player.x;
+            let dir = "";
+            if (Math.abs(rel) < 20) dir = "脚下";
+            else if (rel > 0) dir = "右侧 ➡️";
+            else dir = "左侧 ⬅️";
+            let protection = shootProtectionTimer > 0 ? " (保护中)" : "";
+            ballIndicatorSpan.innerHTML = `⚪ 篮球: ${dir}${protection}`;
+        }
+        
+        function updateUI() {
+            document.getElementById('scoreValue').innerText = score;
+            document.getElementById('playerSpeed').innerText = Math.abs(player.vx).toFixed(1);
+            document.getElementById('shotSpeed').innerText = lastShotSpeedVal;
+            document.getElementById('shotAngle').innerText = lastShotAngleVal;
+            document.getElementById('streakCount').innerText = consecutiveStreak;
+            let hitRate = totalShots === 0 ? 0 : Math.floor((totalHits / totalShots) * 100);
+            document.getElementById('hitRate').innerText = hitRate;
+            document.getElementById('animalCount').innerText = animals.length;
+            updateBallIndicator();
+            updateDistanceDisplay();
+            if (scoreFlashTimer > 0) {
+                const span = document.getElementById('scoreValue');
+                span.classList.add('score-flash');
+                setTimeout(() => span.classList.remove('score-flash'), 250);
+                scoreFlashTimer = 0;
+            }
+        }
+        
+        // 绘图函数
+        function drawGround() {
+            let startX = Math.floor(cameraX / 90) * 90;
+            for (let x = startX; x < cameraX + W + 100; x += 90) {
+                let screenX = x - cameraX;
+                if (screenX > -100 && screenX < W+100) {
+                    ctx.fillStyle = "#7c5a3a";
+                    ctx.fillRect(screenX, GROUND_Y - 6, 45, 8);
+                }
+            }
+            ctx.fillStyle = "#5b3c1e";
+            ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y + 5);
+            ctx.fillStyle = "#7cb53e";
+            ctx.fillRect(0, GROUND_Y - 4, W, 6);
+        }
+        
+        function drawPlayer() {
+            let screenX = player.x - cameraX;
+            ctx.save();
+            ctx.fillStyle = "#E25822";
+            ctx.fillRect(screenX-12, player.y-8, 24, 22);
+            ctx.beginPath();
+            ctx.arc(screenX, player.y-10, PLAYER_RADIUS-2, 0, Math.PI*2);
+            ctx.fillStyle = "#F7D9B5";
+            ctx.fill();
+            ctx.fillStyle = "#2F241B";
+            ctx.beginPath();
+            ctx.arc(screenX-5, player.y-14, 2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(screenX+5, player.y-14, 2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#E34234";
+            ctx.fillRect(screenX-14, player.y-20, 28, 5);
+            let armAngle = player.hasBall ? Math.sin(dribblePhase * 2) * 0.7 : 0.3;
+            ctx.beginPath();
+            ctx.moveTo(screenX+12, player.y-10);
+            ctx.lineTo(screenX+18 - armAngle*3, player.y-6 - armAngle*2);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = "#F7D9B5";
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(screenX-12, player.y-10);
+            ctx.lineTo(screenX-18 + armAngle*3, player.y-6 + armAngle*2);
+            ctx.stroke();
+            if (player.hasBall) {
+                let dribbleY = player.y + 6 + Math.sin(dribblePhase) * 12;
+                ctx.beginPath();
+                ctx.arc(screenX+15, dribbleY, BALL_RADIUS-1, 0, Math.PI*2);
+                ctx.fillStyle = "#d67832";
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+        
+        function drawHoop() {
+            let screenX = HOOP.x - cameraX;
+            if (screenX + HOOP.width/2 < 0 || screenX - HOOP.width/2 > W) return;
+            ctx.fillStyle = "#9b6a3c";
+            ctx.fillRect(screenX - 20, HOOP.y - 32, 14, 70);
+            ctx.fillStyle = "#7a4c2a";
+            ctx.fillRect(screenX - 18, HOOP.y - 28, 10, 60);
+            ctx.beginPath();
+            ctx.ellipse(screenX, HOOP.y, HOOP.width/2, HOOP.height/2.5, 0, 0, Math.PI*2);
+            ctx.strokeStyle = "#f2b541";
+            ctx.stroke();
+            ctx.fillStyle = "#ffcf7a";
+            ctx.beginPath();
+            ctx.ellipse(screenX, HOOP.y, HOOP.width/2-2, HOOP.height/3, 0, 0, Math.PI*2);
+            ctx.fill();
+            for (let i=0;i<8;i++) {
+                ctx.beginPath();
+                ctx.moveTo(screenX-12+i*3.2, HOOP.y+3);
+                ctx.lineTo(screenX-10+i*2.8+Math.sin(Date.now()*0.008+i)*2, HOOP.y+26);
+                ctx.stroke();
+            }
+        }
+        
+        function drawBall() {
+            if (!ball.active) return;
+            let screenX = ball.x - cameraX;
+            if (screenX + BALL_RADIUS < -200 || screenX - BALL_RADIUS > W+200) return;
+            ctx.beginPath();
+            ctx.arc(screenX, ball.y, BALL_RADIUS, 0, Math.PI*2);
+            ctx.fillStyle = "#d67832";
+            ctx.fill();
+            ctx.fillStyle = "#2e2116";
+            ctx.beginPath();
+            ctx.ellipse(screenX-2, ball.y-1, 2, 3, 0.4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(screenX-5, ball.y);
+            ctx.lineTo(screenX+5, ball.y);
+            ctx.moveTo(screenX, ball.y-5);
+            ctx.lineTo(screenX, ball.y+5);
+            ctx.stroke();
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            const grad = ctx.createLinearGradient(0,0,0,300);
+            grad.addColorStop(0,"#c9e4ff");
+            grad.addColorStop(1,"#daf0ce");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,W,GROUND_Y-20);
+            drawGround();
+            drawGrass();
+            drawHoop();
+            for (let a of animals) a.draw(ctx, cameraX);
+            drawPlayer();
+            drawBall();
+            drawDistanceSigns();
+            if (scoreFlashTimer) {
+                ctx.fillStyle = "gold";
+                ctx.font = "bold 26px monospace";
+                ctx.fillText("+1", HOOP.x - cameraX - 10, HOOP.y - 40);
+            }
+            if (player.hasBall) {
+                ctx.fillStyle = "#ffffaa";
+                ctx.font = "bold 14px monospace";
+                ctx.fillText("🏀 持球中，按 J 投篮", player.x - cameraX - 45, player.y - 45);
+            } else if (shootProtectionTimer > 0) {
+                ctx.fillStyle = "#ffaa66";
+                ctx.font = "bold 12px monospace";
+                ctx.fillText("⏱️ 保护期", player.x - cameraX - 25, player.y - 50);
+            }
+        }
+        
+        let lastTimestamp = 0, animFrame;
+        function gameLoop(now) {
+            animFrame = requestAnimationFrame(gameLoop);
+            if (!lastTimestamp) { lastTimestamp = now; return; }
+            let dt = Math.min(0.033, (now - lastTimestamp) / 1000);
+            if (dt <= 0) { lastTimestamp = now; return; }
+            lastTimestamp = now;
+            updatePlayer(dt);
+            updateBall(dt);
+            updateDribble(dt);
+            updateAnimals(dt);
+            updateScoreCooldown(dt);
+            updateShootProtection(dt);
+            handleDeerSteal();
+            tryPickUpBall();
+            updateCamera();
+            updateTimeDisplay();
+            updateUI();
+            draw();
+        }
+        
+        function resetGame() {
+            score = 0;
+            totalShots = 0;
+            totalHits = 0;
+            consecutiveStreak = 0;
+            maxStreak = 0;
+            gameStartTime = Date.now();
+            lastHitTime = null;
+            player.x = HOOP_WORLD_X - 200;
+            player.y = GROUND_Y - PLAYER_RADIUS;
+            player.vx = 0; player.vy = 0;
+            player.onGround = true;
+            player.hasBall = false;
+            ball.active = true;
+            ball.x = player.x + 40;
+            ball.y = GROUND_Y - BALL_RADIUS;
+            ball.vx = 0; ball.vy = 0;
+            scoreCooldown = false;
+            scoreCooldownTimer = 0;
+            shootProtectionTimer = 0;
+            initAnimals();
+            generateGrass();
+            updateUI();
+            updateBestiaryCounts();
+            debugSpan.innerHTML = "🔄 重置 | 杂草分组细长 | 按Q查看图鉴";
+        }
+        
+        function onKeyDown(e) {
+            const key = e.key;
+            if (key === 'ArrowLeft' || key === 'ArrowRight') { e.preventDefault(); keys[key] = true; }
+            if (key === 'ArrowUp') { e.preventDefault(); if (!jumpRequested && player.onGround) jumpRequested = true; }
+            if (key === 'j' || key === 'J') { e.preventDefault(); shootBall(); }
+            if (key === 'q' || key === 'Q') { e.preventDefault(); toggleBestiary(); }
+            if (key === 'r' || key === 'R') { e.preventDefault(); resetGame(); }
+        }
+        function onKeyUp(e) {
+            const key = e.key;
+            if (key === 'ArrowLeft' || key === 'ArrowRight') { keys[key] = false; e.preventDefault(); }
+        }
+        
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        canvas.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+        
+        resetGame();
+        animFrame = requestAnimationFrame(gameLoop);
+    })();
+</script>
+</body>
+</html>
