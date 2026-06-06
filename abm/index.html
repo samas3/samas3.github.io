@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非洲数学家</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .health-bar {
+            width: 200px;
+            height: 25px;
+            background: #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a6f);
+            transition: width 0.3s ease;
+        }
+
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .enemy-display {
+            text-align: center;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .enemy-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .hand-section {
+            margin-bottom: 20px;
+        }
+
+        .hand-title {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .hand-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 80px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .card {
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card.selected {
+            border-color: #667eea;
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .card-num {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-sym {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .play-sequence {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 10px;
+            border: 2px dashed #ffd700;
+        }
+
+        .sequence-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .sequence-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .sequence-card {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9em;
+            position: relative;
+        }
+
+        .sequence-card .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .sequence-card .remove-btn:hover {
+            background: #cc0000;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .play-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .message-log {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+
+        .message.error {
+            color: #e74c3c;
+        }
+
+        .message.success {
+            color: #27ae60;
+        }
+
+        .message.info {
+            color: #3498db;
+        }
+
+        .reward-section {
+            display: none;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .reward-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .reward-card {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .reward-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .role-selection {
+            display: grid;
+            gap: 15px;
+        }
+
+        .role-option {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-option:hover {
+            background: #e9e9e9;
+            transform: translateX(5px);
+        }
+
+        .role-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .role-desc {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .pile-info {
+            display: none;
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .status-bar {
+                flex-direction: column;
+            }
+
+            .enemy-value {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>非洲数学家</h1>
+        
+        <!-- 模式选择 -->
+        <div id="modeSelection" class="modal active">
+            <div class="modal-content">
+                <div class="modal-title">选择操作</div>
+                <div style="text-align: center;">
+                    <button class="btn-primary" onclick="showEncyclopedia()" style="margin: 10px;">查看图鉴</button>
+                    <button class="btn-success" onclick="startBasicMode()" style="margin: 10px;">基础模式</button>
+                    <button class="btn-success" onclick="startAdvancedMode()" style="margin: 10px;">进阶模式</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图鉴 -->
+        <div id="encyclopediaModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">📚 游戏图鉴</div>
+                <div id="encyclopediaContent"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn-secondary" onclick="closeEncyclopedia()">返回</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 角色选择 -->
+        <div id="roleSelection" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">选择你的角色</div>
+                <div id="roleOptions" class="role-selection"></div>
+            </div>
+        </div>
+
+        <!-- 奖励选择 -->
+        <div id="rewardSection" class="reward-section">
+            <h3 style="text-align: center; margin-bottom: 10px;">🎁 三选一奖励</h3>
+            <div id="rewardOptions" class="reward-options"></div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn-secondary" onclick="skipReward()">跳过</button>
+            </div>
+        </div>
+
+        <!-- 牌堆信息 -->
+        <div id="drawPileInfo" class="pile-info">
+            <strong>抽牌堆:</strong>
+            <div id="drawPileCards"></div>
+        </div>
+        <div id="discardPileInfo" class="pile-info">
+            <strong>弃牌堆:</strong>
+            <div id="discardPileCards"></div>
+        </div>
+
+        <!-- 游戏主界面 -->
+        <div id="gameInterface" class="hidden">
+            <div class="status-bar">
+                <div class="status-item">
+                    战斗: <span id="battleNumber">1</span>/10
+                </div>
+                <div class="status-item">
+                    分数: <span id="currentScore">1</span>
+                </div>
+                <div class="status-item">
+                    血量:
+                    <div class="health-bar">
+                        <div class="health-fill" id="healthFill"></div>
+                        <div class="health-text" id="healthText"></div>
+                    </div>
+                </div>
+                <div class="status-item" id="roleDisplay"></div>
+            </div>
+
+            <div class="enemy-display">
+                <div>当前敌人</div>
+                <div class="enemy-value" id="enemyValue">-</div>
+            </div>
+
+            <!-- 出牌序列 -->
+            <div class="play-sequence" id="playSequence" style="display: none;">
+                <div class="sequence-title">📋 出牌序列 (点击卡牌移除)</div>
+                <div class="sequence-cards" id="sequenceCards"></div>
+            </div>
+
+            <div class="hand-section">
+                <div class="hand-title">手牌 (点击加入出牌序列)</div>
+                <div class="hand-cards" id="handCards"></div>
+            </div>
+
+            <div class="button-group" style="margin-bottom: 20px;">
+                <button class="btn-primary" onclick="submitPlaySequence()">提交出牌</button>
+                <button class="btn-success" onclick="endTurn()">结束回合</button>
+                <button class="btn-secondary" onclick="clearPlaySequence()">清空序列</button>
+                <button class="btn-secondary" onclick="showDrawPile()">查看抽牌堆 (W)</button>
+                <button class="btn-secondary" onclick="showDiscardPile()">查看弃牌堆 (D)</button>
+            </div>
+
+            <div class="message-log" id="messageLog"></div>
+        </div>
+
+        <!-- 游戏结束 -->
+        <div id="gameOverModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title" id="gameOverTitle"></div>
+                <div id="gameOverMessage" style="text-align: center; font-size: 1.2em; margin: 20px 0;"></div>
+                <div style="text-align: center;">
+                    <button class="btn-primary" onclick="restartGame()">重新开始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 辅助函数 ==========
+        function isPrime(n) {
+            if (n < 2) return false;
+            if (n === 2) return true;
+            if (n % 2 === 0) return false;
+            const r = Math.floor(Math.sqrt(n));
+            for (let i = 3; i <= r; i += 2) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        function nextPrime(n) {
+            while (!isPrime(n)) {
+                n += 1;
+            }
+            return n;
+        }
+
+        function roundOneDecimal(x) {
+            return Math.round(x * 10) / 10;
+        }
+
+        function roundTwoDecimal(x) {
+            return Math.round(x * 100) / 100;
+        }
+
+        function mathFloor(x) {
+            return Math.floor(x);
+        }
+
+        // ========== 卡牌类 ==========
+        class Card {
+            constructor(name, type, value = null) {
+                this.name = name;
+                this.type = type;
+                this.value = value;
+            }
+        }
+
+        // ========== 卡组构建 ==========
+        function initialDeckBasic() {
+            const deck = [];
+            for (let i = 0; i < 3; i++) {
+                deck.push(new Card("2", "num", 2));
+                deck.push(new Card("3", "num", 3));
+            }
+            deck.push(new Card("/", "sym"));
+            for (let i = 0; i < 2; i++) {
+                deck.push(new Card("+", "sym"));
+                deck.push(new Card("-", "sym"));
+            }
+            deck.push(new Card("*", "sym"));
+            return deck;
+        }
+
+        function initialDeckPythagoras() {
+            const deck = [];
+            for (let i = 0; i < 3; i++) {
+                deck.push(new Card("s2", "num", Math.sqrt(2)));
+                deck.push(new Card("s3", "num", Math.sqrt(3)));
+            }
+            deck.push(new Card("/", "sym"));
+            for (let i = 0; i < 2; i++) {
+                deck.push(new Card("+", "sym"));
+                deck.push(new Card("-", "sym"));
+            }
+            deck.push(new Card("*", "sym"));
+            return deck;
+        }
+
+        function buildRewardPool(mode = "basic", includeT = false) {
+            const pool = [];
+            let numVals = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 99, -2];
+            if (mode === "advanced") {
+                numVals = numVals.concat([0.5, Math.E, 9999]);
+            }
+            
+            numVals.forEach(v => {
+                const name = v === Math.E ? "e" : String(v);
+                for (let i = 0; i < 3; i++) {
+                    pool.push(new Card(name, "num", v));
+                }
+            });
+
+            const symNames = ["+", "-", "*", "/", "^", "z"];
+            symNames.forEach(s => {
+                for (let i = 0; i < 5; i++) {
+                    pool.push(new Card(s, "sym"));
+                }
+            });
+
+            if (includeT) {
+                for (let i = 0; i < 2; i++) {
+                    pool.push(new Card("t", "sym"));
+                }
+            }
+
+            return pool;
+        }
+
+        // ========== 运算符处理 ==========
+        function applyOperator(currentScore, op, num, pythagoras = false) {
+            let res;
+            
+            switch(op) {
+                case "+":
+                    res = currentScore + num;
+                    break;
+                case "-":
+                    res = currentScore - num;
+                    break;
+                case "*":
+                    res = currentScore * num;
+                    break;
+                case "/":
+                    res = currentScore / num;
+                    break;
+                case "^":
+                    res = currentScore === 0 ? 0 : Math.pow(currentScore, num);
+                    break;
+                case "z":
+                    num = parseInt(num);
+                    let s = typeof currentScore === 'number' && !Number.isInteger(currentScore) 
+                        ? String(roundOneDecimal(currentScore)).replace(/\.?0+$/, '')
+                        : String(currentScore);
+                    res = s.includes('.') ? parseFloat(s + num) : parseInt(s + num);
+                    break;
+                case "t":
+                    num = parseInt(num);
+                    const sScore = String(typeof currentScore === 'number' && !Number.isInteger(currentScore) 
+                        ? Math.floor(currentScore) 
+                        : currentScore);
+                    const sNum = String(num);
+                    if (sNum.length >= sScore.length) {
+                        res = num;
+                    } else {
+                        res = parseInt(sScore.slice(0, -sNum.length) + sNum);
+                    }
+                    break;
+                default:
+                    throw new Error(`未知符号: ${op}`);
+            }
+
+            if (pythagoras) {
+                res = roundOneDecimal(res);
+            } else {
+                res = mathFloor(res);
+            }
+            
+            return res;
+        }
+
+        // ========== 游戏状态 ==========
+        let gameState = {
+            mode: "basic",
+            role: null,
+            deck: [],
+            maxHealth: 100,
+            health: 100,
+            enemies: [],
+            currentEnemyIndex: 0,
+            score: 1,
+            drawPile: [],
+            discardPile: [],
+            hand: [],
+            selectedCards: [],
+            playSequence: [],  // 出牌序列
+            currentRound: 0,
+            gameOver: false,
+            victory: false,
+            firstRoundKill: false,
+            secondRoundKill: false,
+            nextBattleScore: null,
+            battleRounds: 0
+        };
+
+        // ========== 敌人生成 ==========
+        function generateEnemySequence() {
+            const seq = [];
+            const first = Math.floor(Math.random() * 21) + 20;
+            seq.push(first);
+            
+            for (let i = 1; i < 10; i++) {
+                const prev = seq[seq.length - 1];
+                const delta = Math.floor(Math.random() * 41) - 20;
+                
+                let nxt;
+                if (i < 5) {
+                    nxt = prev * 2 + delta;
+                } else {
+                    nxt = Math.ceil(prev * 1.5) + delta;
+                }
+                seq.push(nxt);
+            }
+            
+            if (!isPrime(seq[seq.length - 1])) {
+                seq[seq.length - 1] = nextPrime(seq[seq.length - 1]);
+            }
+            
+            return seq;
+        }
+
+        // ========== 洗牌 ==========
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // ========== 初始化战斗 ==========
+        function resetForBattle() {
+            gameState.score = gameState.nextBattleScore !== null ? gameState.nextBattleScore : 1;
+            gameState.drawPile = [...gameState.deck];
+            shuffleArray(gameState.drawPile);
+            gameState.discardPile = [];
+            gameState.hand = [];
+            gameState.currentRound = 0;
+            gameState.battleRounds = 0;
+            gameState.selectedCards = [];
+            gameState.playSequence = [];  // 初始化出牌序列
+        }
+
+        // ========== 抽牌 ==========
+        function drawCards(count = 8) {
+            for (let i = 0; i < count; i++) {
+                if (gameState.drawPile.length === 0) {
+                    if (gameState.discardPile.length === 0) break;
+                    gameState.drawPile = [...gameState.discardPile];
+                    shuffleArray(gameState.drawPile);
+                    gameState.discardPile = [];
+                }
+                if (gameState.drawPile.length > 0) {
+                    gameState.hand.push(gameState.drawPile.pop());
+                }
+            }
+        }
+
+        // ========== 显示消息 ==========
+        function addMessage(text, type = "info") {
+            const log = document.getElementById('messageLog');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            log.appendChild(msg);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ========== 更新UI ==========
+        function updateUI() {
+            document.getElementById('currentScore').textContent = 
+                gameState.role === "毕达哥拉斯" ? roundOneDecimal(gameState.score) : gameState.score;
+            document.getElementById('enemyValue').textContent = 
+                gameState.role === "毕达哥拉斯" ? roundOneDecimal(gameState.enemies[gameState.currentEnemyIndex]) : gameState.enemies[gameState.currentEnemyIndex];
+            document.getElementById('battleNumber').textContent = gameState.currentEnemyIndex + 1;
+            
+            const healthPercent = (gameState.health / gameState.maxHealth) * 100;
+            document.getElementById('healthFill').style.width = `${Math.max(0, healthPercent)}%`;
+            document.getElementById('healthText').textContent = `${Math.floor(gameState.health)}/${gameState.maxHealth}`;
+            
+            renderHand();
+        }
+
+        // ========== 渲染手牌 ==========
+        function renderHand() {
+            const container = document.getElementById('handCards');
+            container.innerHTML = '';
+            
+            gameState.hand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                const isInSequence = gameState.playSequence.some(item => item.index === index);
+                cardEl.className = `card card-${card.type} ${isInSequence ? 'disabled' : ''}`;
+                cardEl.textContent = card.name;
+                if (!isInSequence) {
+                    cardEl.onclick = () => addToPlaySequence(index);
+                }
+                container.appendChild(cardEl);
+            });
+
+            renderPlaySequence();
+        }
+
+        // ========== 添加到出牌序列 ==========
+        function addToPlaySequence(handIndex) {
+            const card = gameState.hand[handIndex];
+            gameState.playSequence.push({
+                card: card,
+                index: handIndex
+            });
+            renderHand();
+            addMessage(`已添加 ${card.name} 到出牌序列`, "info");
+        }
+
+        // ========== 渲染出牌序列 ==========
+        function renderPlaySequence() {
+            const sequenceDiv = document.getElementById('playSequence');
+            const sequenceCards = document.getElementById('sequenceCards');
+            
+            if (gameState.playSequence.length === 0) {
+                sequenceDiv.style.display = 'none';
+                return;
+            }
+            
+            sequenceDiv.style.display = 'block';
+            sequenceCards.innerHTML = '';
+            
+            gameState.playSequence.forEach((item, seqIndex) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `sequence-card card-${item.card.type}`;
+                cardEl.textContent = item.card.name;
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeFromPlaySequence(seqIndex);
+                };
+                
+                cardEl.appendChild(removeBtn);
+                sequenceCards.appendChild(cardEl);
+            });
+        }
+
+        // ========== 从出牌序列移除 ==========
+        function removeFromPlaySequence(seqIndex) {
+            gameState.playSequence.splice(seqIndex, 1);
+            renderHand();
+        }
+
+        // ========== 选择卡牌（保留旧功能，用于兼容）==========
+        function toggleCardSelection(index) {
+            const pos = gameState.selectedCards.indexOf(index);
+            if (pos > -1) {
+                gameState.selectedCards.splice(pos, 1);
+            } else {
+                gameState.selectedCards.push(index);
+            }
+            renderHand();
+        }
+
+        // ========== 提交出牌序列 ==========
+        function submitPlaySequence() {
+            if (gameState.playSequence.length === 0) {
+                addMessage("出牌序列为空，请先点击手牌添加卡牌", "error");
+                return;
+            }
+
+            const result = processPlaySequence();
+            if (result.success) {
+                updateUI();
+            }
+        }
+
+        // ========== 清空出牌序列 ==========
+        function clearPlaySequence() {
+            gameState.playSequence = [];
+            renderHand();
+            addMessage("已清空出牌序列", "info");
+        }
+
+        // ========== 处理出牌序列 ==========
+        function processPlaySequence() {
+            if (gameState.playSequence.length === 0) {
+                return { success: true, endRound: true };
+            }
+
+            if (gameState.playSequence.length % 2 !== 0) {
+                addMessage("错误：出牌序列必须符号与数字成对出现（总张数为偶数）", "error");
+                return { success: false, endRound: false };
+            }
+
+            const usedCards = [];
+            const pairs = [];
+
+            for (let i = 0; i < gameState.playSequence.length; i += 2) {
+                const symItem = gameState.playSequence[i];
+                const numItem = gameState.playSequence[i + 1];
+
+                const symCard = symItem.card;
+                const numCard = numItem.card;
+
+                if (symCard.type !== "sym") {
+                    addMessage(`错误：位置 ${i + 1} 应该是符号牌，但是 ${symCard.name}`, "error");
+                    return { success: false, endRound: false };
+                }
+
+                if (numCard.type !== "num") {
+                    addMessage(`错误：位置 ${i + 2} 应该是数字牌，但是 ${numCard.name}`, "error");
+                    return { success: false, endRound: false };
+                }
+
+                // 特殊数值处理
+                let processedNumCard = new Card(numCard.name, numCard.type, numCard.value);
+                if (["s2", "s3", "e"].includes(numCard.name)) {
+                    processedNumCard.value = roundTwoDecimal(numCard.value);
+                }
+
+                // 检查占位符和替换符
+                if (["z", "t"].includes(symCard.name)) {
+                    const numVal = processedNumCard.value;
+                    if (!(Number.isInteger(numVal) || (typeof numVal === 'number' && numVal % 1 === 0))) {
+                        addMessage(`错误：${symCard.name} 后面只能接自然数（非负整数）`, "error");
+                        return { success: false, endRound: false };
+                    }
+                    if (numVal < 0) {
+                        addMessage(`错误：${symCard.name} 后面不能接负数`, "error");
+                        return { success: false, endRound: false };
+                    }
+                }
+
+                pairs.push({ sym: symCard, num: processedNumCard });
+                usedCards.push(symItem.index, numItem.index);
+            }
+
+            // 从手牌中移除使用的卡牌（按索引从大到小排序，避免索引偏移）
+            usedCards.sort((a, b) => b - a);
+            usedCards.forEach(idx => {
+                gameState.hand.splice(idx, 1);
+            });
+            
+            // 添加到弃牌堆
+            gameState.playSequence.forEach(item => {
+                gameState.discardPile.push(item.card);
+            });
+
+            // 计算新分数
+            let current = gameState.score;
+            const pythagoras = gameState.role === "毕达哥拉斯";
+            
+            pairs.forEach(({ sym, num }) => {
+                current = applyOperator(current, sym.name, num.value, pythagoras);
+            });
+            
+            gameState.score = current;
+            
+            // 清空出牌序列
+            gameState.playSequence = [];
+            
+            addMessage(`当前分数: ${pythagoras ? roundOneDecimal(current) : current}`, "success");
+            
+            return { success: true, endRound: false };
+        }
+
+        // ========== 检查能否结束回合 ==========
+        function canEndTurn() {
+            if (gameState.role === "牛顿") {
+                const numCount = gameState.hand.filter(c => c.type === "num").length;
+                const symCount = gameState.hand.filter(c => c.type === "sym").length;
+                if (numCount > 1 && symCount > 1) {
+                    addMessage("牛顿角色：手牌中数字牌和符号牌数量都大于1，不能结束回合。请继续出牌。", "error");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // ========== 结束回合 ==========
+        function endTurn() {
+            if (!canEndTurn()) return;
+            
+            gameState.battleRounds++;
+            const killed = endOfRoundDamage();
+            
+            if (killed) {
+                handleEnemyKilled();
+            } else {
+                if (gameState.health <= 0) {
+                    gameOver(false);
+                } else {
+                    gameState.discardPile.push(...gameState.hand);
+                    gameState.hand = [];
+                    gameState.selectedCards = [];
+                    gameState.playSequence = [];  // 清空出牌序列
+                    addMessage("回合结束，准备下一回合...", "info");
+                    setTimeout(() => {
+                        drawCards(8);
+                        updateUI();
+                    }, 1000);
+                }
+            }
+        }
+
+        // ========== 回合结束伤害计算 ==========
+        function endOfRoundDamage() {
+            const enemy = gameState.enemies[gameState.currentEnemyIndex];
+            let absScore = Math.abs(gameState.score);
+            const pythagoras = gameState.role === "毕达哥拉斯";
+            
+            if (pythagoras) {
+                absScore = roundOneDecimal(absScore);
+            }
+
+            // 拉马努金特殊判定
+            if (gameState.role === "拉马努金" && Math.abs(absScore - enemy) <= 8) {
+                return true;
+            }
+
+            // 相等判定
+            if (absScore === enemy) {
+                return true;
+            }
+
+            // 伤害计算
+            let dmg;
+            if (absScore > enemy) {
+                dmg = absScore / enemy;
+            } else {
+                dmg = enemy / absScore;
+            }
+
+            if (pythagoras) {
+                dmg = roundOneDecimal(dmg);
+                dmg = Math.max(0.1, dmg - 1);
+            } else {
+                dmg = mathFloor(dmg);
+            }
+
+            // 高斯技能
+            if (gameState.role === "高斯") {
+                if (enemy % absScore === 0) {
+                    dmg = 0;
+                    addMessage("高斯：分数是敌人整数倍，免伤", "success");
+                } else {
+                    dmg = dmg * 2;
+                    addMessage("高斯：分数不是敌人整数倍，双倍伤害", "info");
+                }
+            }
+
+            // 欧拉技能
+            if (gameState.role === "欧拉") {
+                if (![0, 1, -1].includes(absScore)) {
+                    if (isPrime(Math.floor(absScore))) {
+                        dmg = Math.max(0, dmg - 3);
+                        addMessage("欧拉：分数为质数，伤害-3", "success");
+                    } else {
+                        dmg = dmg + 3;
+                        addMessage("欧拉：分数为合数，伤害+3", "info");
+                    }
+                }
+            }
+
+            // 伤害上限
+            let maxDmg = gameState.role === "高斯" ? 20 : 10;
+            if (pythagoras) maxDmg = 20.0;
+            
+            if (dmg > maxDmg) dmg = maxDmg;
+
+            gameState.health -= dmg;
+            addMessage(`受到伤害 ${dmg}，剩余血量 ${Math.floor(gameState.health)}`, "error");
+            
+            return false;
+        }
+
+        // ========== 处理敌人被击杀 ==========
+        function handleEnemyKilled() {
+            const enemy = gameState.enemies[gameState.currentEnemyIndex];
+            addMessage(`击杀！分数绝对值 ${Math.abs(gameState.score)} 等于敌人 ${enemy}`, "success");
+
+            // 进阶模式特殊效果
+            if (gameState.mode === "advanced") {
+                if (gameState.battleRounds === 1) {
+                    gameState.firstRoundKill = true;
+                    gameState.health = gameState.maxHealth;
+                    gameState.nextBattleScore = gameState.score;
+                    addMessage("天命人！血量回满，下一场战斗初始分数继承当前分数。", "success");
+                } else if (gameState.battleRounds === 2) {
+                    gameState.secondRoundKill = true;
+                    const extra = 15;
+                    gameState.health = Math.min(gameState.maxHealth, gameState.health + extra);
+                    addMessage(`精密！额外回复 ${extra} 血，当前血量 ${Math.floor(gameState.health)}`, "success");
+                }
+            }
+
+            // 伯努利技能
+            if (gameState.role === "伯努利") {
+                gameState.health = gameState.maxHealth;
+                addMessage(`伯努利：血量回满至 ${Math.floor(gameState.health)}`, "success");
+            } else {
+                gameState.health = Math.min(gameState.maxHealth, gameState.health + 5);
+                addMessage(`战后回复5血，当前血量 ${Math.floor(gameState.health)}`, "success");
+            }
+
+            // 费马技能
+            if (gameState.role === "费马") {
+                fermatRemoveCards();
+            }
+
+            // 检查胜利
+            if (gameState.currentEnemyIndex === 9) {
+                gameOver(true);
+                return;
+            }
+
+            // 进入奖励阶段
+            showRewardSelection();
+        }
+
+        // ========== 费马技能 ==========
+        function fermatRemoveCards() {
+            if (gameState.deck.length <= 2) {
+                gameState.deck = [];
+                addMessage("费马：卡组已被移除所有牌", "info");
+            } else {
+                const removed = [];
+                for (let i = 0; i < 2; i++) {
+                    const idx = Math.floor(Math.random() * gameState.deck.length);
+                    removed.push(gameState.deck[idx].name);
+                    gameState.deck.splice(idx, 1);
+                }
+                addMessage(`费马：移除了 ${removed.join(', ')}，剩余 ${gameState.deck.length} 张牌`, "info");
+            }
+        }
+
+        // ========== 奖励选择 ==========
+        function showRewardSelection() {
+            const rewardSection = document.getElementById('rewardSection');
+            const rewardOptions = document.getElementById('rewardOptions');
+            rewardOptions.innerHTML = '';
+
+            const groups = gameState.role === "拉马努金" ? 1 : 2;
+            const includeT = gameState.mode === "advanced";
+
+            let currentGroup = 0;
+
+            function showNextGroup() {
+                if (currentGroup >= groups) {
+                    rewardSection.style.display = 'none';
+                    startNextBattle();
+                    return;
+                }
+
+                const pool = buildRewardPool(gameState.mode, includeT);
+                const uniqueNames = [...new Set(pool.map(c => c.name))];
+                const selectedNames = [];
+                
+                while (selectedNames.length < 3 && uniqueNames.length > 0) {
+                    const idx = Math.floor(Math.random() * uniqueNames.length);
+                    selectedNames.push(uniqueNames[idx]);
+                    uniqueNames.splice(idx, 1);
+                }
+
+                const options = selectedNames.map(name => pool.find(c => c.name === name));
+
+                options.forEach((card, idx) => {
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'reward-card';
+                    cardEl.innerHTML = `
+                        <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">${card.name}</div>
+                        <div style="color: #666; margin-top: 5px;">${card.type === 'num' ? '数字' : '符号'}</div>
+                    `;
+                    cardEl.onclick = () => selectReward(card);
+                    rewardOptions.appendChild(cardEl);
+                });
+
+                rewardSection.style.display = 'block';
+                addMessage(`第 ${currentGroup + 1} 组奖励选择`, "info");
+            }
+
+            window.selectReward = function(card) {
+                gameState.deck.push(card);
+                addMessage(`已添加 ${card.name}`, "success");
+
+                // 欧几里得技能
+                if (gameState.role === "欧几里得") {
+                    const x = gameState.currentEnemyIndex + 1;
+                    for (let i = 0; i < 2 * x; i++) {
+                        const copyCard = new Card(card.name, card.type, card.value);
+                        gameState.deck.push(copyCard);
+                    }
+                    addMessage(`欧几里得：额外添加 ${2*x} 张复制品`, "success");
+                }
+
+                currentGroup++;
+                rewardOptions.innerHTML = '';
+                showNextGroup();
+            };
+
+            window.skipReward = function() {
+                addMessage("已跳过本次奖励", "info");
+                currentGroup++;
+                rewardOptions.innerHTML = '';
+                showNextGroup();
+            };
+
+            showNextGroup();
+        }
+
+        // ========== 开始下一场战斗 ==========
+        function startNextBattle() {
+            gameState.currentEnemyIndex++;
+            resetForBattle();
+            drawCards(8);
+            updateUI();
+            addMessage(`===== 第 ${gameState.currentEnemyIndex + 1} 场战斗 =====`, "info");
+        }
+
+        // ========== 显示牌堆 ==========
+        function showDrawPile() {
+            const info = document.getElementById('drawPileInfo');
+            const cards = document.getElementById('drawPileCards');
+            cards.textContent = gameState.drawPile.map(c => c.name).join(', ');
+            info.style.display = 'block';
+            setTimeout(() => { info.style.display = 'none'; }, 3000);
+        }
+
+        function showDiscardPile() {
+            const info = document.getElementById('discardPileInfo');
+            const cards = document.getElementById('discardPileCards');
+            cards.textContent = gameState.discardPile.map(c => c.name).join(', ');
+            info.style.display = 'block';
+            setTimeout(() => { info.style.display = 'none'; }, 3000);
+        }
+
+        // ========== 游戏结束 ==========
+        function gameOver(victory) {
+            gameState.gameOver = true;
+            gameState.victory = victory;
+            
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const message = document.getElementById('gameOverMessage');
+            
+            if (victory) {
+                title.textContent = '🎉 胜利！';
+                message.innerHTML = `
+                    <p>恭喜你击败了所有敌人！</p>
+                    <p>最终血量: ${Math.floor(gameState.health)}</p>
+                `;
+            } else {
+                title.textContent = '💀 游戏失败';
+                message.innerHTML = `
+                    <p>血量归零，挑战失败。</p>
+                    <p>到达战斗: ${gameState.currentEnemyIndex + 1}/10</p>
+                `;
+            }
+            
+            modal.classList.add('active');
+        }
+
+        // ========== 重新开始 ==========
+        function restartGame() {
+            location.reload();
+        }
+
+        // ========== 图鉴 ==========
+        function showEncyclopedia() {
+            const modal = document.getElementById('encyclopediaModal');
+            const content = document.getElementById('encyclopediaContent');
+            
+            content.innerHTML = `
+                <h3 style="margin: 15px 0 10px 0; color: #667eea;">【基本规则】</h3>
+                <ol style="line-height: 1.8; color: #555;">
+                    <li>每场战斗初始分数为1，通过出牌组合提升分数。</li>
+                    <li>每回合抽8张牌，必须按符号→数字交替出牌，可一次出多对。</li>
+                    <li>回合结束直接回车，比较分数绝对值与敌人数值：
+                        <ul style="margin-left: 20px; margin-top: 5px;">
+                            <li>相等：击杀，进入下一场，回复5血，获得两次三选一奖励。</li>
+                            <li>不等：受到伤害 = 较大值/较小值（毕达哥拉斯角色特殊），伤害上限10。</li>
+                        </ul>
+                    </li>
+                    <li>血量归零则游戏失败，击败10个敌人胜利。</li>
+                </ol>
+
+                <h3 style="margin: 15px 0 10px 0; color: #667eea;">【卡牌类型】</h3>
+                <ul style="line-height: 1.8; color: #555;">
+                    <li><strong>数字牌：</strong>0,1,2,3,4,5,6,7,8,9,99,-2 等（基础模式）；进阶模式额外有0.5, e(2.718), 9999。</li>
+                    <li><strong>符号牌：</strong>+（加）、-（减）、*（乘）、/（除，下取整）、^（指数，底数为0得0）、z（占位符，拼接数字）、t（替换符，进阶模式特有，替换末尾数字）</li>
+                </ul>
+
+                <h3 style="margin: 15px 0 10px 0; color: #667eea;">【运算符说明】</h3>
+                <ul style="line-height: 1.8; color: #555;">
+                    <li>+, -, *, /, ^ 同数学运算。</li>
+                    <li>z：将当前分数与后接数字拼接，如 13 z 7 → 137。后接数字必须为非负整数。</li>
+                    <li>t：用后接自然数替换分数最后几位，如 235 t 2 → 232；267 t 99 → 299；273 t 9999 → 9999。</li>
+                </ul>
+
+                <h3 style="margin: 15px 0 10px 0; color: #667eea;">【进阶模式角色】</h3>
+                <ul style="line-height: 1.8; color: #555;">
+                    <li><strong>欧拉：</strong>回合结束时，若分数绝对值为质数，受到的伤害-3（不低于0）；若为合数，伤害+3；若为0或±1，无效果。</li>
+                    <li><strong>伯努利：</strong>最大血量变为20，每场战斗结束后血量回满。</li>
+                    <li><strong>高斯：</strong>回合结束时，若敌人数值为分数的整数倍，免伤；否则双倍伤害（上限20）。</li>
+                    <li><strong>猴子：</strong>初始卡组替换为12张随机卡牌。</li>
+                    <li><strong>拉马努金：</strong>每场战斗后只能进行一组三选一。回合结束时，分数与敌人数值差的绝对值≤8即击杀。</li>
+                    <li><strong>牛顿：</strong>手牌中数字牌和符号牌数量都大于1时不能结束回合。最大血量、初始血量变为150。</li>
+                    <li><strong>毕达哥拉斯：</strong>初始2和3变成√2和√3；所有分数计算保留一位小数；伤害计算后-1（最低0.1）。</li>
+                    <li><strong>欧几里得：</strong>向卡组中加入卡牌时，额外加入2x张该卡牌的复制品，x为已经历的战斗场数。</li>
+                    <li><strong>费马：</strong>每场战斗结束时，从你的卡组中随机移除2张牌。</li>
+                </ul>
+
+                <h3 style="margin: 15px 0 10px 0; color: #667eea;">【特殊机制】</h3>
+                <ul style="line-height: 1.8; color: #555;">
+                    <li><strong>天命人：</strong>进阶模式中第一回合击杀敌人 → 回满血，下一场战斗初始分数继承当前分数。</li>
+                    <li><strong>精密：</strong>进阶模式中第二回合击杀敌人 → 额外回复15血。</li>
+                    <li><strong>查看牌堆：</strong>出牌阶段输入 w 查看抽牌堆，d 查看弃牌堆。</li>
+                </ul>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeEncyclopedia() {
+            document.getElementById('encyclopediaModal').classList.remove('active');
+        }
+
+        // ========== 开始基础模式 ==========
+        function startBasicMode() {
+            gameState.mode = "basic";
+            gameState.role = null;
+            gameState.deck = initialDeckBasic();
+            gameState.enemies = generateEnemySequence();
+            gameState.currentEnemyIndex = 0;
+            gameState.maxHealth = 100;
+            gameState.health = 100;
+            gameState.nextBattleScore = null;
+            
+            document.getElementById('modeSelection').classList.remove('active');
+            document.getElementById('gameInterface').classList.remove('hidden');
+            document.getElementById('roleDisplay').textContent = '基础模式';
+            
+            resetForBattle();
+            drawCards(8);
+            updateUI();
+            addMessage("===== 数学肉鸽游戏 - 基础模式 =====", "info");
+            addMessage(`敌人序列: ${gameState.enemies.join(', ')}`, "info");
+        }
+
+        // ========== 开始进阶模式 ==========
+        function startAdvancedMode() {
+            const roleDescriptions = {
+                "欧拉": "回合结束时，若分数绝对值为质数，受到的伤害-3（不低于0）；若为合数，伤害+3；若为0或±1，无效果。",
+                "伯努利": "最大血量变为20，每场战斗结束后血量回满。",
+                "高斯": "回合结束时，若敌人数值为分数的整数倍，免伤；否则双倍伤害（上限20）。",
+                "猴子": "初始卡组替换为12张随机卡牌。",
+                "拉马努金": "每场战斗后只能进行一组三选一。回合结束时，分数与敌人数值差的绝对值≤8即击杀。",
+                "牛顿": "手牌中数字牌和符号牌数量都大于1时不能结束回合。最大血量、初始血量变为150。",
+                "毕达哥拉斯": "初始2和3变成√2和√3；所有分数计算保留一位小数；伤害计算后-1（最低0.1）。",
+                "欧几里得": "向卡组中加入卡牌时，额外加入2x张该卡牌的复制品，x为已经历的战斗场数。",
+                "费马": "每场战斗结束时，从你的卡组中随机移除2张牌。"
+            };
+
+            const roleNames = Object.keys(roleDescriptions);
+            const chosenRoles = [];
+            const tempNames = [...roleNames];
+            
+            for (let i = 0; i < 3; i++) {
+                const idx = Math.floor(Math.random() * tempNames.length);
+                chosenRoles.push(tempNames[idx]);
+                tempNames.splice(idx, 1);
+            }
+
+            const roleOptions = document.getElementById('roleOptions');
+            roleOptions.innerHTML = '';
+
+            chosenRoles.forEach((role, idx) => {
+                const option = document.createElement('div');
+                option.className = 'role-option';
+                option.innerHTML = `
+                    <div class="role-name">${idx + 1}. ${role}</div>
+                    <div class="role-desc">${roleDescriptions[role]}</div>
+                `;
+                option.onclick = () => selectRole(role);
+                roleOptions.appendChild(option);
+            });
+
+            document.getElementById('modeSelection').classList.remove('active');
+            document.getElementById('roleSelection').classList.add('active');
+        }
+
+        function selectRole(role) {
+            gameState.mode = "advanced";
+            gameState.role = role;
+            gameState.enemies = generateEnemySequence();
+            gameState.currentEnemyIndex = 0;
+            gameState.nextBattleScore = null;
+
+            if (role === "伯努利") {
+                gameState.maxHealth = 20;
+                gameState.health = 20;
+            } else if (role === "牛顿") {
+                gameState.maxHealth = 150;
+                gameState.health = 150;
+            } else {
+                gameState.maxHealth = 100;
+                gameState.health = 100;
+            }
+
+            if (role === "毕达哥拉斯") {
+                gameState.deck = initialDeckPythagoras();
+            } else if (role === "猴子") {
+                const fullPool = buildRewardPool("advanced", true);
+                shuffleArray(fullPool);
+                gameState.deck = fullPool.slice(0, 12);
+            } else {
+                gameState.deck = initialDeckBasic();
+            }
+
+            document.getElementById('roleSelection').classList.remove('active');
+            document.getElementById('gameInterface').classList.remove('hidden');
+            document.getElementById('roleDisplay').textContent = `进阶模式 - ${role}`;
+            
+            resetForBattle();
+            drawCards(8);
+            updateUI();
+            addMessage(`===== 数学肉鸽游戏 - 进阶模式 =====`, "info");
+            addMessage(`角色: ${role}`, "info");
+            addMessage(`敌人序列: ${gameState.enemies.join(', ')}`, "info");
+        }
+
+    </script>
+</body>
+</html>
