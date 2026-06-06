@@ -1073,7 +1073,6 @@
 
             // 伤害上限
             let maxDmg = gameState.role === "高斯" ? 20 : 10;
-            if (pythagoras) maxDmg = 20.0;
             
             if (dmg > maxDmg) dmg = maxDmg;
 
@@ -1086,7 +1085,7 @@
         // ========== 处理敌人被击杀 ==========
         function handleEnemyKilled() {
             const enemy = gameState.enemies[gameState.currentEnemyIndex];
-            addMessage(`击杀！分数绝对值 ${Math.abs(gameState.score)} 等于敌人 ${enemy}`, "success");
+            addMessage(`击杀！分数绝对值 ${Math.abs(gameState.score)} ，敌人 ${enemy}`, "success");
 
             // 进阶模式特殊效果
             if (gameState.mode === "advanced") {
