@@ -114,4 +114,37 @@
 &lt;li&gt;运行服务器
 &lt;code&gt;python3 gradio_app.py --model_path tencent/Hunyuan3D-2.1 --subfolder hunyuan3d-dit-v2-1 --texgen_model_path tencent/Hunyuan3D-2.1 --low_vram_mode&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;a href="https://huggingface.co/spaces/tencent/Hunyuan3D-2"&gt;官方试用网站&lt;/a&gt;&lt;/p&gt;</description></item></channel></rss>
+&lt;p&gt;&lt;a href="https://huggingface.co/spaces/tencent/Hunyuan3D-2"&gt;官方试用网站&lt;/a&gt;&lt;/p&gt;</description></item><item><title>关于</title><link>https://samas3.github.io/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://samas3.github.io/about/</guid><description>&lt;p&gt;这里是 &lt;a href="https://github.com/samas3"&gt;samas3&lt;/a&gt; 的个人主页。&lt;/p&gt;
+&lt;p&gt;平时主要折腾 Phigros、Minecraft 和各类小工具，踩过的坑和随手做的东西都会记在这个博客里。&lt;/p&gt;
+&lt;h2 id="我的仓库"&gt;我的仓库&lt;/h2&gt;
+&lt;h3 id="本博客与站点"&gt;本博客与站点&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/myblog"&gt;myblog&lt;/a&gt;&lt;/strong&gt; — 本博客源码（Hugo + PaperMod）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/samas3.github.io"&gt;samas3.github.io&lt;/a&gt;&lt;/strong&gt; — GitHub Pages 构建输出目录&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="phigros-相关"&gt;Phigros 相关&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/Phigros_Resource"&gt;Phigros_Resource&lt;/a&gt;&lt;/strong&gt; — Phigros 谱面资源处理工具&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/Phigros_Resource_auto"&gt;Phigros_Resource_auto&lt;/a&gt;&lt;/strong&gt; — 谱面资源自动化工具&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/Phygros"&gt;Phygros&lt;/a&gt;&lt;/strong&gt; — 基于 Python 的 Phigros 模拟器（弃坑）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/Phigrjs"&gt;Phigrjs&lt;/a&gt;&lt;/strong&gt; — 基于 JavaScript 的 Phigros 模拟器&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="minecraft-相关"&gt;Minecraft 相关&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/MC"&gt;MC&lt;/a&gt;&lt;/strong&gt; — Minecraft 工具集（MCH / MCTest）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/jsmacros-chinese-doc"&gt;jsmacros-chinese-doc&lt;/a&gt;&lt;/strong&gt; — JSMacros 与 ClientCommands 中文文档（弃坑）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/video-in-chat"&gt;video-in-chat&lt;/a&gt;&lt;/strong&gt; — 在 MC 聊天栏中播放视频的模组&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="浏览器--网页工具"&gt;浏览器 / 网页工具&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/basketbros-ce"&gt;basketbros-ce&lt;/a&gt;&lt;/strong&gt; — BasketBros Community Edition&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/bb-editor"&gt;bb-editor&lt;/a&gt;&lt;/strong&gt; — BasketBros 角色编辑器&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/WeFlow"&gt;WeFlow&lt;/a&gt;&lt;/strong&gt; — WeFlow fork&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="其他"&gt;其他&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/Netease_url"&gt;Netease_url&lt;/a&gt;&lt;/strong&gt; — 网易云音乐 URL 处理工具&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/JSOverride"&gt;JSOverride&lt;/a&gt;&lt;/strong&gt; — JS 覆盖工具&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/SmartDog"&gt;SmartDog&lt;/a&gt;&lt;/strong&gt; — Jupyter Notebook 学习项目&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://github.com/samas3/lx-music-mobile"&gt;lx-music-mobile&lt;/a&gt;&lt;/strong&gt; — LX Music fork&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>

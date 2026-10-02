@@ -77,6 +77,10 @@ def decrypt_content(s):
         else:
             continue
         maxx = max(maxx, int(font.measure(k) / 10))
+    if len(names.keys()) > 0:
+        do.config(state='normal')
+    if len(gnames.keys()) > 0:
+        do2.config(state='normal')
     return maxx
 def loadFile(force=False):
     names.clear()
@@ -96,7 +100,7 @@ def getName(dic):
                 pyttsx3.speak(name[0].split(' ')[1])
             except:
                 flag = 0
-                messagebox.showinfo('提示', '你先别急')
+                # messagebox.showinfo('提示', '你先别急')
         threading.Thread(target=_).start()
     if flag:
         return name[0]
@@ -111,7 +115,7 @@ def pickn():
     else:
         mode = 1
         loadFile()
-do = Button(t, text='抽号(学号)', command=pickn, font=font)
+do = Button(t, text='抽号(学号)', command=pickn, font=font, state="disabled")
 do.grid(row=2, column=0, columnspan=2)
 def pickg():
     global gnames, mode
@@ -123,7 +127,7 @@ def pickg():
     else:
         mode = 2
         loadFile()
-do2 = Button(t, text='抽号(小组)', command=pickg, font=font)
+do2 = Button(t, text='抽号(小组)', command=pickg, font=font, state="disabled")
 do2.grid(row=3, column=0, columnspan=2)
 def fail(text='读取失败'):
     res['text'] = text
@@ -137,8 +141,8 @@ def succeed(text):
     path['text'] = text
     res['fg'] = 'black'
     path['fg'] = 'black'
-    do['state'] = 'normal'
-    do2['state'] = 'normal'
+    # do['state'] = 'normal'
+    # do2['state'] = 'normal'
 def load(force_online=False):
     global path
     fn = file
