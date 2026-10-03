@@ -115,7 +115,7 @@
 &lt;code&gt;python3 gradio_app.py --model_path tencent/Hunyuan3D-2.1 --subfolder hunyuan3d-dit-v2-1 --texgen_model_path tencent/Hunyuan3D-2.1 --low_vram_mode&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;a href="https://huggingface.co/spaces/tencent/Hunyuan3D-2"&gt;官方试用网站&lt;/a&gt;&lt;/p&gt;</description></item><item><title>关于</title><link>https://samas3.github.io/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://samas3.github.io/about/</guid><description>&lt;p&gt;这里是 &lt;a href="https://github.com/samas3"&gt;samas3&lt;/a&gt; 的个人主页。&lt;/p&gt;
-&lt;p&gt;平时主要折腾 Phigros、Minecraft 和各类小工具，踩过的坑和随手做的东西都会记在这个博客里。&lt;/p&gt;
+&lt;p&gt;平时主要开发游戏及相关小工具，踩过的坑和随手做的东西都会记在这个博客里。&lt;/p&gt;
 &lt;h2 id="我的仓库"&gt;我的仓库&lt;/h2&gt;
 &lt;h3 id="本博客与站点"&gt;本博客与站点&lt;/h3&gt;
 &lt;ul&gt;
